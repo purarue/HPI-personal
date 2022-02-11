@@ -17,6 +17,7 @@ upstream_module_dependencies() {
 
 module_deps() {
 	upstream_module_dependencies || return $?
+	pip_install 'git+https://github.com/karlicoss/arctee' || return $?
 	hpi_module my.old_forums || return $?
 }
 
