@@ -5,6 +5,7 @@ set -o pipefail
 BASE_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 cd "${BASE_DIR}" || exit 1
 
+# deps I use from upstream, might as well install them here
 upstream_module_dependencies() {
 	hpi_module my.github.ghexport || return $?
 	hpi_module my.reddit.pushshift || return $?
