@@ -8,7 +8,7 @@ These are personal modules that I don't see anyone else using, and some of my pe
 
 Requires `python3.7+`
 
-To install, follow the instructions [here](https://github.com/seanbreckenridge/HPI#install)
+To install, first follow the instructions [on my HPI repo](https://github.com/seanbreckenridge/HPI#install)
 
 Then install this as editable:
 
