@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# personal setup script
+set -o pipefail
+
+BASE_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
+cd "${BASE_DIR}" || exit 1
+
+upstream_module_dependencies() {
+	hpi_module my.github.ghexport || return $?
+	hpi_module my.reddit.pushshift || return $?
+	hpi_module my.reddit.rexport || return $?
+	hpi_module my.pdfs || return $?
+	hpi_module my.smscalls || return $?
+	hpi_module my.coding.commits || return $?
+}
+
+module_deps() {
+	upstream_module_dependencies || return $?
+	hpi_module my.old_forums || return $?
+}
+
+pmain() {
+	pip_install -e . || return $?
+	module_deps || prompt_if_fails || return $?
+}
+
+declare MY_MODULES
+MY_MODULES="$(realpath ../HPI)"
+if [[ ! -e "${MY_MODULES}" ]]; then
+	echo "My Modules doesn't exist '${MY_MODULES}'" 1>&2
+	exit 1
+fi
+
+source "${MY_MODULES}/install" 'source'
+pmain "$@" || exit $?
