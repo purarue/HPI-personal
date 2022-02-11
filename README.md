@@ -20,6 +20,6 @@ python3 -m pip install -e ./HPI-seanbreckenridge-personal
 
 ### Jobs
 
-[`jobs`](./jobs) contains anacron-like jobs that are run periodically, using [`bgproc`](https://github.com/seanbreckenridge/bgproc) and [`evry`](https://github.com/seanbreckenridge/evry). In other words, those are the scripts that back up the data, and the python here parses it.
+[`jobs`](./jobs) contains anacron-like jobs that are run periodically, using [`bgproc`](https://github.com/seanbreckenridge/bgproc) and [`evry`](https://github.com/seanbreckenridge/evry). In other words, those are the scripts that back up my data.
 
 I run the jobs in the background using [supervisor](https://github.com/Supervisor/supervisor), see [here](https://github.com/seanbreckenridge/dotfiles/tree/master/.local/scripts/supervisor) for my configuration, and/or [`run_jobs`](https://github.com/seanbreckenridge/dotfiles/blob/master/.local/scripts/supervisor/run_jobs) for the `bgproc` wrapper. They likely won't work out of the box for you, as they depend on tokens/environment variables that are set on my system - In particular the `HPIDATA` environment variable, which for me is `~/data` -- they're here as examples if you're having issues setting up cron/scripts to backup the data
