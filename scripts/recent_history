@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -e
+set -o pipefail
+
+URL="$(recent_history.py | fzf +m --tac | head -n 1 | jq -r .url)" || exit 1
+[[ -n "${URL}" ]] && openurl "${URL}"
