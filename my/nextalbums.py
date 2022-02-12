@@ -16,36 +16,27 @@ class config(user_config):
 
 
 from pathlib import Path
-
 from typing import Iterator
 
-from my.core import get_files, Stats, LazyLogger
-
 from nextalbums.export import Album, read_dump
-
-
-logger = LazyLogger(__name__, level="warning")
+from my.core import get_files, Stats
 
 
 # should only ever be one dump, the .job overwrites the file
-def _current_albums_export_path() -> Path:
+def input() -> Path:
     dump = list(get_files(config.export_path))
     assert len(dump) == 1, "Expected one JSON file as input"
     return dump[0]
 
 
-def _albums_cached() -> Iterator[Album]:
-    return read_dump(_current_albums_export_path())
-
-
 def history() -> Iterator[Album]:
     """Only return items I've listened to, where the score is not null"""
-    yield from filter(lambda a: a.listened, _albums_cached())
+    yield from filter(lambda a: a.listened, read_dump(input()))
 
 
 def to_listen() -> Iterator[Album]:
     """Albums I have yet to listen to"""
-    yield from filter(lambda a: not a.listened and not a.dropped, _albums_cached())
+    yield from filter(lambda a: not a.listened and not a.dropped, read_dump(input()))
 
 
 def stats() -> Stats:
