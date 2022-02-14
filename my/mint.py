@@ -8,8 +8,8 @@ import logging
 from typing import Tuple, List
 from functools import lru_cache
 
-from budget import data
-from budget.analyze import cleaned_snapshots, Snapshot, Transaction
+import budget
+from budget import analyze
 from more_itertools import last
 
 from my.core import Stats
@@ -17,7 +17,7 @@ from my.core.logging import mklevel
 
 
 @lru_cache(1)
-def _data() -> Tuple[List[Snapshot], List[Transaction]]:
+def _data() -> Tuple[List[analyze.Snapshot], List[analyze.Transaction]]:
     """
     Get data from the budget module (data is handled by that/environment variables)
     see https://github.com/seanbreckenridge/mint
@@ -26,26 +26,26 @@ def _data() -> Tuple[List[Snapshot], List[Transaction]]:
     if "HPI_LOGS" in os.environ:
         if mklevel(os.environ["HPI_LOGS"]) == logging.DEBUG:
             debug = True
-    return data(debug=debug)
+    return budget.data(debug=debug)
 
 
-def balances() -> List[Snapshot]:
+def _all_balances() -> List[analyze.Snapshot]:
     """
     Return all the balance snapshots, tracked in the git hitsory
     """
     bal_snapshots, _ = _data()
     bal_snapshots.sort(key=lambda t: t.at)
-    return list(cleaned_snapshots(sorted_snapshots=bal_snapshots))
+    return list(analyze.cleaned_snapshots(sorted_snapshots=bal_snapshots))
 
 
-def balance() -> Snapshot:
+def balance() -> analyze.Snapshot:
     """
     Return my current account balance
     """
-    return last(balances())
+    return last(_all_balances())
 
 
-def transactions() -> List[Transaction]:
+def transactions() -> List[analyze.Transaction]:
     """
     Return all transactions (me buying things) I've made. Merges data from all of my different bank accounts
     """
@@ -58,6 +58,6 @@ def stats() -> Stats:
     from my.core import stat
 
     return {
-        **stat(balances),
+        **stat(_all_balances),
         **stat(transactions),
     }
