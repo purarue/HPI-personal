@@ -22,11 +22,12 @@ def _data() -> Tuple[List[analyze.Snapshot], List[analyze.Transaction]]:
     Get data from the budget module (data is handled by that/environment variables)
     see https://github.com/seanbreckenridge/mint
     """
-    debug: bool = False
     if "HPI_LOGS" in os.environ:
-        if mklevel(os.environ["HPI_LOGS"]) == logging.DEBUG:
-            debug = True
-    return budget.data(debug=debug)
+        from budget.log import setup as log_setup
+
+        log_setup(level=mklevel(os.environ["HPI_LOGS"]))
+
+    return budget.data()
 
 
 def _all_balances() -> List[analyze.Snapshot]:
