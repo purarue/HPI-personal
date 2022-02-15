@@ -34,5 +34,5 @@ if [[ ! -e "${MY_MODULES}" ]]; then
 	exit 1
 fi
 
-source "${MY_MODULES}/install" 'source'
+source "${MY_MODULES}/install"
 pmain "$@" || exit $?
