@@ -10,7 +10,7 @@ Used with the recent_history script
 import json
 from browserexport.browsers.firefox import Firefox
 from browserexport.parse import read_visits
-from sqlite_backup import sqlite_backup
+from sqlite_backup.core import sqlite_backup
 from more_itertools import unique_everseen
 
 conn = sqlite_backup(Firefox.locate_database())

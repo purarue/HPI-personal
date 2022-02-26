@@ -7,7 +7,7 @@ all ghexport events into a single JSON file
 Example:
 arctee 'merged_{utcnow}.json' -- dedupe_ghexport
 
-If the new merged file looks correct, you can reove
+If the new merged file looks correct, you can remove
 the other JSON files
 """
 

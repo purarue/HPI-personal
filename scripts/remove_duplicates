@@ -15,7 +15,7 @@ TimePaths = List[TimePath]
 
 def remove_consecutive(inps: TimePaths) -> None:
     contents: Optional[str] = None
-    for (dt, p) in inps:
+    for (_, p) in inps:
         file_contents: str = p.read_text().strip()
         if contents is None:
             contents = p.read_text().strip()
