@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+
+"""
+Save my Discord Attachments (Images, Files) I've sent locally
+"""
+
+import os
+import time
+from pathlib import Path
+from urllib.parse import urlparse
+
+import click
+import requests
+from my.discord.data_export import messages
+
+
+default_pictures = Path(
+    os.environ.get("XDG_PICTURES_DIR", Path(os.environ["HOME"], "Pictures"))
+)
+
+
+def url_filename(base: Path, urlparts: list[str]) -> Path:
+    """
+    use URL path as the directory structure
+    limit path parts to 64 characters, some are really long (base 64 encoded names)
+    """
+    for part in urlparts:
+        if len(part) > 64:
+            name, ext = os.path.splitext(part)
+            base /= f"{name[:64]}{ext}"
+        else:
+            base /= part
+    return base
+
+
+@click.command(help=__doc__)
+@click.argument(
+    "DISCORD_ATTACHMENTS_DIR",
+    default=default_pictures / "discord_attachments",
+    type=click.Path(file_okay=False, dir_okay=True, path_type=Path),
+)
+def main(discord_attachments_dir: Path) -> None:
+    urls: set[str] = set()
+    for msg in messages():
+        if msg.attachments.strip():
+            # split, in case there are multiple urls in the same message
+            for url in msg.attachments.split():
+                urls.add(url)
+
+    for i, url in enumerate(sorted(urls)):
+        # remove query params, split so we can validate stuff
+        urlparts = urlparse(url).path.strip("/").split("/")
+        assert len(urlparts) >= 4, f"{url} {len(urlparts)}"
+        assert urlparts[0] == "attachments", url
+        assert urlparts[1].isdigit(), url
+        assert urlparts[2].isdigit(), url
+
+        target = url_filename(discord_attachments_dir, urlparts[1:])
+
+        if not target.exists():
+
+            # request url
+            click.echo(
+                f"[{click.style(i + 1, 'green')}/{click.style(len(urls), (167, 124, 252))}] Requesting {url}",
+                err=True,
+            )
+            resp = requests.get(url, stream=True)
+            time.sleep(1)
+            if resp.status_code != 200:
+                click.echo(f"Downloading '{url}' failed", err=True)
+                continue
+
+            # stream to file
+            target.parent.mkdir(exist_ok=True, parents=True)
+            click.echo(f"Writing to '{target}'", err=True)
+            with open(target, "wb") as f:
+                for chunk in resp:
+                    f.write(chunk)
+
+
+if __name__ == "__main__":
+    main()
