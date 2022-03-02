@@ -1,11 +1,7 @@
 #!/bin/bash
 # backup safari browsing history
 
-err() {
-	send-error 'browserexport: failed to backup safari database...'
-}
-
 evry 2 weeks -backup_safari && {
 	printlog "browserexport:backing up safari history databases..."
-	browserexport save -b safari --to "$(python3 -m my.utils.backup_to browsing)" || err
+	browserexport save -b safari --to "$(python3 -m my.utils.backup_to browsing)" || send-error 'browserexport: failed to backup safari database...'
 }
