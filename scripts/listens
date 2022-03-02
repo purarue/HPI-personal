@@ -40,7 +40,6 @@ def main(recent: str | None, desc: bool) -> None:
         drop_exceptions=True,
     ):
         assert isinstance(ll, FeedItem)
-
         d = {
             "when": str(datetime.fromtimestamp(int(ll.when.timestamp()))),
             "title": ll.title,
