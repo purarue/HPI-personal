@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -e
+set -o pipefail
+
+fzfcache "hpi query -s my.zsh.history | jq '.command' | unique | jq -r" | fzf
