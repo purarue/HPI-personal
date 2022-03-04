@@ -20,7 +20,7 @@ albums-describe-score() {
 	jq -r '"[\(.score) | \(.listened_on)] \(.cover_artists) - \(.album_name) (\(.year))"'
 }
 # any albums which I can't find/have to order physical copies for to listen to
-alias albums-cant-find="hpi query -s my.nextalbums._albums_cached | jq -r 'select(.note==\"cant find\")' | albums-describe"
+alias albums-cant-find="hpi query -s my.nextalbums._albums | jq -r 'select(.note==\"cant find\")' | albums-describe"
 # list any albums I have yet to listen to, sorted by how many awards they've won
 albums-awards() {
 	local COUNT="${1:-10}"
@@ -28,12 +28,16 @@ albums-awards() {
 }
 # just the next albums I should listen to chronologically
 albums-next() {
-	hpi query my.nextalbums.to_listen -s --limit "${1:-10}" | albums-describe
+	local args=('-s')
+	if [[ -n "$1" ]]; then
+		args+=('-l' "${1}")
+	fi
+	albums-to-listen "${args[@]}" | albums-describe
 }
-alias albums-next-all='albums-next 99999'
 alias albums-history-desc='albums-history -s | albums-describe-score'
+alias albums-to-listen-desc='albums-next'
 # albums-history -s | albums-filter-reason 'Grammy for Best Rock' | albums-describe-score
-# hq my.albums.to_listen -s | albums-filter-reason 'Contemporary Blues' | albums-describe
+# albums-to-listen -s | albums-filter-reason 'Contemporary Blues' | albums-describe
 albums-filter-reason() {
 	local reason
 	reason="${1:?provide reason to filter by as first argument}"

@@ -29,14 +29,18 @@ def input() -> Path:
     return dump[0]
 
 
+def _albums() -> Iterator[Album]:
+    yield from read_dump(input())
+
+
 def history() -> Iterator[Album]:
     """Only return items I've listened to, where the score is not null"""
-    yield from filter(lambda a: a.listened, read_dump(input()))
+    yield from filter(lambda a: a.listened, _albums())
 
 
 def to_listen() -> Iterator[Album]:
     """Albums I have yet to listen to"""
-    yield from filter(lambda a: not a.listened and not a.dropped, read_dump(input()))
+    yield from filter(lambda a: not a.listened and not a.dropped, _albums())
 
 
 def stats() -> Stats:
