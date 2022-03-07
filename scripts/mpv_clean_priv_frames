@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+
+import json
+import typing as t
+from pathlib import Path
+
+import click
+from more_itertools import unique_everseen
+from my.mpv.history_daemon import all_history, Media, inputs
+
+disallowed = (
+    "id3v2_priv",
+    "gracenote",
+    "organization",
+)
+
+
+def _has_priv_frames(metadata: dict[str, t.Any]) -> bool:
+    for k in metadata.keys():
+        kl = k.lower()
+        for d in disallowed:
+            if d in kl:
+                return True
+    return False
+
+
+# to remove all the private data on my mpv files
+def list_broken(mpv: Media) -> t.Iterator[str]:
+    if _has_priv_frames(mpv.metadata):
+        yield mpv.path
+
+
+def clean_file(jf: Path) -> None:
+    data = json.loads(jf.read_text())
+    for ts in list(data):
+        event_data = data[ts]
+        if "metadata" in event_data:
+            metadata = event_data["metadata"]
+            if _has_priv_frames(metadata):
+                removed_keys = []
+                for k in list(metadata):
+                    kl = k.lower()
+                    for d in disallowed:
+                        if d in kl:
+                            metadata.pop(k)
+                            removed_keys.append(k)
+                print(f"Removed {removed_keys}, fixed {metadata}")
+    jf.write_text(json.dumps(data))
+
+
+@click.command()
+@click.argument("CMD", type=click.Choice(["list", "clean"], case_sensitive=False))
+def main(cmd: str) -> None:
+    """
+    Removes private id3 frames from mpv data files, and lets me run
+    and eyeD3 (ID3) command against any listed files to prevent them
+    from appearing in meatdata files in the future
+
+    These are typically big blobs of base64 which increase the size
+    of the metadata files
+
+    Should list, to check if there are any new tracked private tags:
+
+    mpv_clean_priv_frames list
+
+    Then remove them with a command like:
+
+    \b
+    mpv_clean_priv_frames list | sort -u | exists | tr '\\n' '\\0' | xargs -0 -I {} eyeD3 --remove-frame PRIV --user-text-frame 'GracenoteExtData:' --user-text-frame 'GracenoteFileID:' --user-text-frame 'DISCID:' --user-text-frame 'ORGANIZATION:' --user-text-frame "GRACENOTEFILEID:" --user-text-frame "GRACENOTEEXTDATA:" "{}"
+
+    And and then 'mpv_clean_priv_frames clean' to remove the metadata keys from my mpv data files
+    """
+
+    if cmd == "clean":
+        for p in inputs():
+            clean_file(p)
+    else:
+        for m in all_history():
+            for loc in unique_everseen(list_broken(m)):
+                print(loc)
+
+
+if __name__ == "__main__":
+    main()
