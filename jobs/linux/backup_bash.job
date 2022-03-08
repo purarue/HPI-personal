@@ -1,0 +1,9 @@
+#!/bin/bash
+# bash history from my computer
+
+evry 1 week -backup_bash && {
+	BASH_HISTORY="${HOME}/.bash_history"
+	is_hpi_bash_format "${BASH_HISTORY}" || exit 0
+	printlog "backup_bash:Backing up local bash history..."
+	arctee -r 3 "$(python3 -m my.utils.backup_to bash)/{utcnow}-{hostname}" -- cat "${BASH_HISTORY}"
+}

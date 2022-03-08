@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+
+import sys
+from pathlib import Path
+
+import click
+
+from my.bash import _parse_file
+
+
+@click.command()
+@click.argument("FILE", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+def main(file: Path) -> None:
+    """
+    If my bash history couldn't be parsed by my HPI module, exit unsuccessfully
+    Used to make sure the bash history is using the correct format before backing it up
+    """
+    res = list(_parse_file(file))
+    if len(res) == 0:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
