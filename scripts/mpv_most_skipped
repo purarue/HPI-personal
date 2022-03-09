@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import shutil
+from collections import defaultdict
+from pathlib import Path
+from itertools import islice
+
+# import playlist paths computed by
+# https://sean.fish/d/linkmusic?dark
+import seanb.playlists as linkmusic
+
+import click
+from my.mpv import history_daemon
+
+
+def playlist_paths() -> list[str]:
+    return [
+        str(p.in_musicdir())
+        for p in linkmusic.iterate_playlists(linkmusic.playlistdir())
+    ]
+
+
+@click.command()
+@click.option("-p", "--print-count", is_flag=True, default=False)
+@click.argument("COUNT", type=int, default=50)
+def main(print_count: bool, count: int) -> None:
+    """
+    Print paths which I've skipped more often than I listen to
+
+    I may want to remove these from my playlists since I skip them all the time
+    https://github.com/seanbreckenridge/plaintext-playlist
+    """
+    # TODO: make this cross platform by splitting off some part
+    # checking if its in a list of music dirs
+    playlist_songs = set(playlist_paths())
+    score: dict[str, int] = defaultdict(lambda: 0)
+    musicdir = str(linkmusic.musicdir())
+    for m in history_daemon.all_history():
+        # ignore if not in music dir
+        if not m.path.startswith(musicdir):
+            continue
+        # ignore if this isnt in my playlists
+        if m.path not in playlist_songs:
+            continue
+        if history_daemon._filter_by(m):
+            score[m.path] += 1
+        else:
+            score[m.path] -= 1
+
+    counts = [(cnt, pth) for pth, cnt in score.items()]
+    counts.sort(key=lambda tup: tup[0], reverse=False)
+    for tup in islice(counts, count):
+        if print_count:
+            print(*tup)
+        else:
+            print(tup[0])
+
+
+if __name__ == "__main__":
+    main()
