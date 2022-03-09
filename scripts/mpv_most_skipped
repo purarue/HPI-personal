@@ -52,7 +52,7 @@ def main(print_count: bool, count: int) -> None:
         if print_count:
             print(*tup)
         else:
-            print(tup[0])
+            print(tup[1])
 
 
 if __name__ == "__main__":
