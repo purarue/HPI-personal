@@ -24,13 +24,16 @@ def _has_priv_frames(metadata: dict[str, t.Any]) -> bool:
     return False
 
 
-# to remove all the private data on my mpv files
 def list_broken(mpv: Media) -> t.Iterator[str]:
     if _has_priv_frames(mpv.metadata):
         yield mpv.path
 
 
 def clean_file(jf: Path) -> None:
+    """
+    Removes any disallowed keys from the metadata object, tracked by
+    https://github.com/seanbreckenridge/mpv-history-daemon
+    """
     data = json.loads(jf.read_text())
     for ts in list(data):
         event_data = data[ts]
@@ -68,7 +71,7 @@ def main(cmd: str) -> None:
     \b
     mpv_clean_priv_frames list | sort -u | exists | tr '\\n' '\\0' | xargs -0 -I {} eyeD3 --remove-frame PRIV --user-text-frame 'GracenoteExtData:' --user-text-frame 'GracenoteFileID:' --user-text-frame 'DISCID:' --user-text-frame 'ORGANIZATION:' --user-text-frame "GRACENOTEFILEID:" --user-text-frame "GRACENOTEEXTDATA:" "{}"
 
-    And and then 'mpv_clean_priv_frames clean' to remove the metadata keys from my mpv data files
+    And then run 'mpv_clean_priv_frames clean' to remove the metadata keys from my mpv data files
     """
 
     if cmd == "clean":
