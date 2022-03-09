@@ -1,6 +1,11 @@
 #!/bin/bash
 # backup firefox/chrome browsing history
 
+save_input_history() {
+	local BROWSER="${1:?Must provide browser to backup}"
+	browserexport save --form-history "${BROWSER}" --to "$(python3 -m my.utils.backup_to browsing_form_history)" || send-error "browserexport: failed to backup ${BROWSER} form history..."
+}
+
 save_database() {
 	local BROWSER="${1:?Must provide browser to backup}"
 	browserexport save -b "${BROWSER}" --to "$(python3 -m my.utils.backup_to browsing)" || send-error "browserexport: failed to backup ${BROWSER} database..."
@@ -10,4 +15,5 @@ evry 2 weeks -backup_browser_history && {
 	printlog "browserexport:backing up shared history databases..."
 	save_database firefox || return $?
 	save_database chrome || return $?
+	save_input_history firefox || return $?
 }
