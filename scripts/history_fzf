@@ -1,16 +1,21 @@
 #!/usr/bin/env bash
 # fuzzy search all my history (with descriptions, to help match what I'm looking for)
 
-set -e
 set -o pipefail
 
-# awk: removes duplicates
 # additional jq after you pick with fzf removes quotes (-r)
+#
+# unique: https://sean.fish/d/unique?dark
 
-exec hpi query -s my.browser.all.history |
+URL="$(hpi query -s my.browser.all.history |
 	jq '"\(.url)|\(.metadata.description)"' |
-	awk '!seen[$0]++' |
+	unique |
 	fzf +m --tac |
 	jq -r |
 	head -n 1 |
-	cut -d"|" -f1
+	cut -d"|" -f1)"
+
+if [[ -n "${URL}" ]]; then
+	echo "${URL}"
+	hash clipcopy 2>/dev/null && clipcopy <<<"${URL}"
+fi
