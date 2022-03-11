@@ -3,13 +3,9 @@
 from collections import defaultdict
 from itertools import islice
 
-# import playlist paths computed by
-# https://sean.fish/d/linkmusic?dark
-# https://sean.fish/d/playlists.py?dark
-import seanb.playlists as linkmusic
-
 import click
 from my.mpv import history_daemon
+import plaintext_playlist_py as linkmusic
 
 
 def playlist_paths() -> list[str]:
