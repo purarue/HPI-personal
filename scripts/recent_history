@@ -1,7 +1,41 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 
-set -e
-set -o pipefail
 
-URL="$(recent_history.py | fzf +m --tac | head -n 1 | jq -r .url)" || exit 1
-[[ -n "${URL}" ]] && openurl "${URL}"
+import json
+from typing import Any
+
+import click
+from browserexport.browsers.firefox import Firefox
+from browserexport.parse import read_visits
+from sqlite_backup.core import sqlite_backup
+from more_itertools import unique_everseen
+from pyfzf import FzfPrompt
+from pyperclip import copy
+from webbrowser import open_new_tab
+
+
+def visits() -> Any:
+    conn = sqlite_backup(Firefox.locate_database())
+    assert conn is not None
+    for visit in unique_everseen(read_visits(conn), key=lambda v: v.url):
+        yield json.dumps(
+            {
+                "url": visit.url,
+                "metadata": getattr(visit.metadata, "description", ""),
+            }
+        )
+
+
+@click.command()
+def main() -> None:
+    fzf = FzfPrompt(default_options="+m --tac")
+    chosen = fzf.prompt(visits())
+    if chosen:
+        url = json.loads(chosen[0])["url"]
+        click.echo(url)
+        copy(url)
+        open_new_tab(url)
+
+
+if __name__ == "__main__":
+    main(prog_name="recent_history")
