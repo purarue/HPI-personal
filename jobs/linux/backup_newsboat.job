@@ -1,6 +1,0 @@
-#!/bin/bash
-# backup current rss subscriptions
-
-evry 1 day -backup_rss && {
-	arctee "$(python3 -m my.utils.backup_to newsboat)/{utcnow}.txt" -- cat "${XDG_CONFIG_HOME}/newsboat/urls" || send-error 'failed to backup newsboat subscriptions'
-}
