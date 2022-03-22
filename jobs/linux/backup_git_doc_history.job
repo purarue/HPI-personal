@@ -1,6 +1,6 @@
 #!/bin/bash
 
-evry 5 minutes -backup_doc_history && {
+evry 5 minutes -backup_git_doc_history && {
 	git_doc_history eva
 	git_doc_history frinkconv
 	git_doc_history mysql
