@@ -6,8 +6,6 @@ from typing import Iterator
 
 from my.core import Stats, LazyLogger
 
-from my.location.via_ip import locations
-
 from my.location import via_ip, google_takeout, gpslogger
 from my.location import apple  # additional source
 
