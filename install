@@ -7,6 +7,9 @@ cd "${BASE_DIR}" || exit 1
 
 # deps I use from upstream, might as well install them here
 upstream_module_dependencies() {
+	hpi_module my.location.gpslogger || return $?
+	hpi_module my.time.tz.via_location || return $?
+	hpi_module my.google.takeout.parser || return $?
 	hpi_module my.github.ghexport || return $?
 	hpi_module my.stackexchange.stexport || return $?
 	hpi_module my.browser.export || return $?
