@@ -50,3 +50,6 @@ albums-filter-genre() {
 	genre="$(echo "${genre}" | tr '[:upper:]' '[:lower:]')"
 	jq "select((.genres + .styles) | .[] |= ascii_downcase | .[] | contains(\"${genre}\"))"
 }
+
+alias albums-recommended='albums-to-listen -s | albums-filter-reason Recommendation'
+alias albums-recommended-desc='albums-recommended | albums-describe'
