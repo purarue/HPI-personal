@@ -14,12 +14,17 @@ disallowed = (
     "organization",
 )
 
+disallowed_startswith = ("lyrics",)
+
 
 def _has_priv_frames(metadata: dict[str, t.Any]) -> bool:
     for k in metadata.keys():
         kl = k.lower()
         for d in disallowed:
             if d in kl:
+                return True
+        for d in disallowed_startswith:
+            if kl.startswith(d):
                 return True
     return False
 
@@ -37,14 +42,17 @@ def clean_file(jf: Path) -> None:
     data = json.loads(jf.read_text())
     for ts in list(data):
         event_data = data[ts]
-        if "metadata" in event_data:
-            metadata = event_data["metadata"]
+        if metadata := event_data.get("metadata"):
             if _has_priv_frames(metadata):
                 removed_keys = []
                 for k in list(metadata):
                     kl = k.lower()
                     for d in disallowed:
                         if d in kl:
+                            metadata.pop(k)
+                            removed_keys.append(k)
+                    for d in disallowed_startswith:
+                        if kl.startswith(d):
                             metadata.pop(k)
                             removed_keys.append(k)
                 print(f"Removed {removed_keys}, fixed {metadata}")
@@ -57,7 +65,7 @@ def main(cmd: str) -> None:
     """
     Removes private id3 frames from mpv data files, and lets me run
     and eyeD3 (ID3) command against any listed files to prevent them
-    from appearing in meatdata files in the future
+    from appearing in metadata files in the future
 
     These are typically big blobs of base64 which increase the size
     of the metadata files
