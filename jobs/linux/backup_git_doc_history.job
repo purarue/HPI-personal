@@ -1,14 +1,15 @@
 #!/bin/bash
 
 evry 5 minutes -backup_git_doc_history && {
-	git_doc_history eva
-	git_doc_history frinkconv
-	git_doc_history mysql
-	git_doc_history newsboat
-	git_doc_history node
-	git_doc_history plaintext_playlist
-	git_doc_history ranger
-	git_doc_history rofi_cache
-	git_doc_history scramble_history
-	git_doc_history todo
+	git_doc_history eva &
+	git_doc_history frinkconv &
+	git_doc_history mysql &
+	git_doc_history newsboat &
+	git_doc_history node &
+	git_doc_history plaintext_playlist &
+	git_doc_history ranger &
+	git_doc_history rofi_cache &
+	git_doc_history scramble_history &
+	git_doc_history todo &
+	wait
 }
