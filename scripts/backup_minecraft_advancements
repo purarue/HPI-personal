@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+
+import shutil
+from pathlib import Path
+
+import click
+from my.core.structure import match_structure
+
+DEFAULT_PATHS: list[str] = ["~/.minecraft"]
+
+
+@click.command()
+@click.option(
+    "-o",
+    "--output-dir",
+    type=click.Path(),
+    required=True,
+    help="save advancements to directory",
+)
+@click.argument("MINECRAFT_DIR", type=click.Path(), required=False)
+def main(output_dir: str, minecraft_dir: str | None) -> None:
+    """helper script to locate/backup minecraft achievements"""
+    dirs: list[str] = list(DEFAULT_PATHS)
+    if minecraft_dir:
+        dirs.append(minecraft_dir)
+    for p in {Path(s).expanduser().absolute() for s in dirs}:
+        with match_structure(p, ("advancements", "stats", "icon.png")) as st:
+            for match in st:
+                copy_to = Path(output_dir).absolute() / match.stem / "advancements"
+                shutil.copytree(match / "advancements", copy_to, dirs_exist_ok=True)
+
+
+if __name__ == "__main__":
+    main(prog_name="backup_minecraft_advancements")

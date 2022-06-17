@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+os() {
+	if hash on_machine; then
+		on_machine
+	else
+		uname -s
+	fi
+}
+
+evry 1 hour -minecraft_advancements && {
+	BACKUP_TO="$(python3 -m my.utils.backup_to minecraft_advancements)/$(os)"
+	backup_minecraft_advancements -o "${BACKUP_TO}"
+}
