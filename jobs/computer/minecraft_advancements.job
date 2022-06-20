@@ -10,5 +10,6 @@ os() {
 
 evry 1 hour -minecraft_advancements && {
 	BACKUP_TO="$(python3 -m my.utils.backup_to minecraft_advancements)/$(os)"
+	printlog "minecraft_advancements:Backing up minecraft advancements to '${BACKUP_TO}'..."
 	backup_minecraft_advancements -o "${BACKUP_TO}"
 }
