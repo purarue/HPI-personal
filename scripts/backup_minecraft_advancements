@@ -24,7 +24,7 @@ def main(output_dir: str, minecraft_dir: str | None) -> None:
     if minecraft_dir:
         dirs.append(minecraft_dir)
     for p in {Path(s).expanduser().absolute() for s in dirs}:
-        with match_structure(p, ("advancements", "stats", "icon.png")) as st:
+        with match_structure(p, ("advancements", "stats")) as st:
             for match in st:
                 copy_to = Path(output_dir).absolute() / match.stem / "advancements"
                 shutil.copytree(match / "advancements", copy_to, dirs_exist_ok=True)
