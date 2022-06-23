@@ -1,6 +1,10 @@
 #!/bin/bash
 # backup firefox/chrome browsing history
 
+# dont run on android
+ON_OS="${ON_OS:=$(on_machine)}"
+[[ "$ON_OS" =~ ^android.* ]] && exit 0
+
 save_input_history() {
 	local BROWSER="${1:?Must provide browser to backup}"
 	browserexport save --form-history "${BROWSER}" --to "$(python3 -m my.utils.backup_to browsing_form_history)" || send-error "browserexport: failed to backup ${BROWSER} form history..."
