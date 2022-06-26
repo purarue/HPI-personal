@@ -1,15 +1,11 @@
 #!/usr/bin/env bash
 
-os() {
-	if hash on_machine; then
-		on_machine
-	else
-		uname -s
-	fi
-}
+# dont run on android
+ON_OS="${ON_OS:=$(on_machine)}"
+[[ "$ON_OS" =~ ^android.* ]] && exit 0
 
 evry 1 hour -minecraft_advancements && {
-	BACKUP_TO="$(python3 -m my.utils.backup_to minecraft_advancements)/$(os)"
+	BACKUP_TO="$(python3 -m my.utils.backup_to minecraft_advancements)/$(on_machine)"
 	printlog "minecraft_advancements:Backing up minecraft advancements to '${BACKUP_TO}'..."
 	backup_minecraft_advancements -o "${BACKUP_TO}"
 }
