@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# dont run on android
+ON_OS="${ON_OS:=$(on_machine)}"
+[[ "$ON_OS" =~ ^android.* ]] && exit 0
+
 # copies screenshots that runelite makes when levels/quests are completed
 # these are essentially game achievements (as images), so it makes for some nice lifelogging
 
