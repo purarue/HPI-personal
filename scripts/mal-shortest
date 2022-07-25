@@ -53,4 +53,4 @@ def main(mal_username: str, status: str) -> None:
 
 
 if __name__ == "__main__":
-    main(prog_name="mal_shortest")
+    main()
