@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+
+from datetime import date
+from typing import Optional
+
+import click
+
+from my.mal.export import anime, AnimeData
+
+
+def seconds_left(a: AnimeData) -> Optional[int]:
+    if a.APIList is None:
+        return None
+    if a.APIList.average_episode_duration is None:
+        return None
+    if a.XMLData.episodes == 0:
+        return None
+    eps_left = a.XMLData.episodes - a.XMLData.watched_episodes
+    if eps_left <= 0:
+        return None
+    sl = a.APIList.average_episode_duration * eps_left
+    if sl == 0:
+        return None
+    return sl
+
+
+def seconds_sort_key(a: AnimeData) -> int:
+    sl = seconds_left(a)
+    if sl is None:
+        return -1
+    return sl
+
+
+def rank(a: AnimeData) -> int:
+    if a.APIList is None:
+        return 99999
+    if a.APIList.rank is None:
+        return 99999
+    return a.APIList.rank
+
+
+def end_date(a: AnimeData) -> date:
+    if a.APIList is None or a.APIList.end_date is None:
+        return date.min
+    return a.APIList.end_date
+
+
+@click.command()
+@click.option("--mal-username", envvar="MAL_USERNAME", required=True)
+@click.option("--status", default="On-Hold", show_default=True, required=True)
+@click.option(
+    "--sort-by",
+    default="seconds_left",
+    type=click.Choice(["seconds_left", "score", "end_date"]),
+)
+def main(mal_username: str, status: str, sort_by: str) -> None:
+    an = list(
+        filter(
+            lambda a: a.XMLData.status == status
+            and a.username == mal_username
+            and a.APIList is not None
+            and a.APIList.status == "finished_airing",
+            anime(),
+        )
+    )
+    if sort_by == "seconds_left":
+        an.sort(key=seconds_sort_key)
+        for a in an:
+            sl = seconds_left(a)
+            if sl is None:
+                continue
+            click.echo(
+                f"https://myanimelist.net/anime/{str(a.id).ljust(6)} | {str(sl//60).zfill(4)} min left | {a.XMLData.title}"
+            )
+    elif sort_by == "score":
+        an.sort(key=rank)
+        for a in an:
+            if a.APIList is None or a.APIList.rank is None:
+                continue
+            click.echo(
+                f"https://myanimelist.net/anime/{str(a.id).ljust(6)} | #{str(a.APIList.rank).zfill(5)} | {a.XMLData.title}"
+            )
+    else:
+        an.sort(key=end_date)
+        for a in an:
+            if a.APIList is None or a.APIList.end_date is None:
+                continue
+            click.echo(
+                f"https://myanimelist.net/anime/{str(a.id).ljust(6)} | {a.APIList.end_date} | {a.XMLData.title}"
+            )
+
+
+
+if __name__ == "__main__":
+    main()
