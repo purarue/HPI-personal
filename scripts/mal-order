@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-from datetime import date
-from typing import Optional
+from typing import Optional, Callable, Any, Dict, Iterator
 
 import click
 
 from my.mal.export import anime, AnimeData
+from my.core.serialize import dumps
 
 
 def seconds_left(a: AnimeData) -> Optional[int]:
@@ -24,71 +24,91 @@ def seconds_left(a: AnimeData) -> Optional[int]:
     return sl
 
 
-def seconds_sort_key(a: AnimeData) -> int:
-    sl = seconds_left(a)
-    if sl is None:
-        return -1
-    return sl
+# define mapping/sort functions for each query
+funcs: Dict[str, Any] = {
+    "seconds_left": (
+        lambda a: seconds_left(a) is not None,
+        lambda a: seconds_left(a),
+        lambda a: str((seconds_left(a) or 0) // 60).zfill(4) + " min left",
+    ),
+    "score": (
+        lambda a: a.APIList.rank is not None,
+        lambda a: a.APIList.rank,
+        lambda a: "#" + str(a.APIList.rank).zfill(5),
+    ),
+    "end_date": (
+        lambda a: a.APIList.end_date is not None,
+        lambda a: a.APIList.end_date,
+        lambda a: str(a.APIList.end_date),
+    ),
+}
 
 
-def rank(a: AnimeData) -> int:
-    if a.APIList is None:
-        return 99999
-    if a.APIList.rank is None:
-        return 99999
-    return a.APIList.rank
-
-
-def end_date(a: AnimeData) -> date:
-    if a.APIList is None or a.APIList.end_date is None:
-        return date.min
-    return a.APIList.end_date
+def sort_and_display(
+    data: Iterator[AnimeData],
+    filter_unsortable: Callable[[AnimeData], bool],
+    sort_key: Callable[[AnimeData], Any],
+    display_column: Callable[[AnimeData], str],
+    /,
+    *,
+    reverse: bool,
+    output_format: str,
+) -> None:
+    out = list(sorted(filter(filter_unsortable, data), key=sort_key, reverse=reverse))
+    if output_format == "table":
+        for a in out:
+            click.echo(
+                f"https://myanimelist.net/anime/{str(a.id).ljust(6)} | {display_column(a)} | {a.XMLData.title}"
+            )
+    else:
+        for a in out:
+            click.echo(
+                dumps(
+                    {
+                        "col": display_column(a),
+                        "anime": a,
+                    }
+                )
+            )
 
 
 @click.command()
-@click.option("--mal-username", envvar="MAL_USERNAME", required=True)
-@click.option("--status", default="On-Hold", show_default=True, required=True)
+@click.option("-u", "--mal-username", envvar="MAL_USERNAME", required=True)
+@click.option("-S", "--status", default="On-Hold", show_default=True, required=True)
 @click.option(
+    "-s",
     "--sort-by",
     default="seconds_left",
     type=click.Choice(["seconds_left", "score", "end_date"]),
+    help="query to order by",
+    show_default=True,
 )
-def main(mal_username: str, status: str, sort_by: str) -> None:
-    an = list(
+@click.option("--reverse/--no-reverse", default=False, help="reverse output of query")
+@click.option(
+    "-o",
+    "--output",
+    default="table",
+    type=click.Choice(["table", "json"]),
+    help="how to display output",
+)
+def main(
+    mal_username: str, status: str, sort_by: str, reverse: bool, output: str
+) -> None:
+    """
+    Displays my MAL list sorted by some custom query
+    """
+    sort_and_display(
         filter(
             lambda a: a.XMLData.status == status
             and a.username == mal_username
             and a.APIList is not None
             and a.APIList.status == "finished_airing",
             anime(),
-        )
+        ),
+        *funcs[sort_by],
+        reverse=reverse,
+        output_format=output,
     )
-    if sort_by == "seconds_left":
-        an.sort(key=seconds_sort_key)
-        for a in an:
-            sl = seconds_left(a)
-            if sl is None:
-                continue
-            click.echo(
-                f"https://myanimelist.net/anime/{str(a.id).ljust(6)} | {str(sl//60).zfill(4)} min left | {a.XMLData.title}"
-            )
-    elif sort_by == "score":
-        an.sort(key=rank)
-        for a in an:
-            if a.APIList is None or a.APIList.rank is None:
-                continue
-            click.echo(
-                f"https://myanimelist.net/anime/{str(a.id).ljust(6)} | #{str(a.APIList.rank).zfill(5)} | {a.XMLData.title}"
-            )
-    else:
-        an.sort(key=end_date)
-        for a in an:
-            if a.APIList is None or a.APIList.end_date is None:
-                continue
-            click.echo(
-                f"https://myanimelist.net/anime/{str(a.id).ljust(6)} | {a.APIList.end_date} | {a.XMLData.title}"
-            )
-
 
 
 if __name__ == "__main__":
