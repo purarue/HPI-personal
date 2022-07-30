@@ -15,7 +15,7 @@ save_database() {
 	browserexport save -b "${BROWSER}" --to "$(python3 -m my.utils.backup_to browsing)" || send-error "browserexport: failed to backup ${BROWSER} database..."
 }
 
-evry 2 weeks -backup_browser_history && {
+evry 5 days -backup_browser_history && {
 	printlog "browserexport:backing up shared history databases..."
 	save_database firefox || return $?
 	save_database chrome || return $?
