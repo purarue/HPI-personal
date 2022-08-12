@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+
+from more_itertools import last
+from my.location.gpslogger import inputs, _extract_locations
+
+
+def main() -> None:
+    latest = last(sorted(inputs(), key=lambda l: l.stat().st_mtime))
+    latest_loc = last(sorted(_extract_locations(latest), key=lambda loc: loc.dt))
+    print(f"{latest_loc.lat},{latest_loc.lon}")
+
+
+if __name__ == "__main__":
+    main()
