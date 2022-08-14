@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -e
+
+malexport update export -u "$MAL_USERNAME"
+MALEXPORT_EPISODE_LIMIT="${1:-5}" malexport update history -u "$MAL_USERNAME" -o anime -c "${2:-3}"
