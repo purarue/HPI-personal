@@ -11,12 +11,13 @@ from typing import Iterator
 import click
 from my.core.query_range import select_range, RangeTuple
 from my_feed.sources.model import FeedItem
-from my_feed.sources import mpv, listens
+from my_feed.sources import mpv, listens, facebook_spotify_listens
 
 
 def sources() -> Iterator[FeedItem]:
     yield from mpv.history()
     yield from listens.history()
+    yield from facebook_spotify_listens.history()
 
 
 @click.command(help=__doc__)
