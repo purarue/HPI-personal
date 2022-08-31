@@ -10,7 +10,7 @@ backup_server() {
 
 evry 1 week -backup_bash_server_history && {
 	printlog "bash_server_history:Backing up bash history from servers..."
-	for server in vultr naspublic seedbox; do
+	for server in vultr seedbox; do
 		backup_server "${server}"
 	done
 }
