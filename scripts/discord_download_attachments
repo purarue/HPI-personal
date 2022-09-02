@@ -76,6 +76,10 @@ def main(discord_attachments_dir: Path) -> None:
             with open(target, "wb") as f:
                 for chunk in resp:
                     f.write(chunk)
+        else:
+            # make sure there are no broken files
+            assert target.stat().st_size > 0, str(target)
+
 
 
 if __name__ == "__main__":
