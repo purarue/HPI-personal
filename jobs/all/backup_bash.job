@@ -1,7 +1,7 @@
 #!/bin/bash
 # bash history from my computer
 
-evry 1 week -backup_bash && {
+evry 2 day -backup_bash && {
 	BASH_HISTORY="${HOME}/.bash_history"
 	is_hpi_bash_format "${BASH_HISTORY}" || exit 0
 	printlog "backup_bash:Backing up local bash history..."
