@@ -5,5 +5,5 @@ evry 2 days -backup_ipython && {
 	readonly IPYTHON_DB="${XDG_DATA_HOME}/ipython/profile_default/history.sqlite"
 	printlog "ipython:backing up history database..."
 	# https://github.com/seanbreckenridge/sqlite_backup
-	sqlite_backup "${IPYTHON_DB}" "$(python3 -m my.utils.backup_to ipython)/$(date +'%s').sqlite" || send-error 'ipython: failed to backup database'
+	sqlite_backup "${IPYTHON_DB}" "$(backup_to ipython)/$(date +'%s').sqlite" || send-error 'ipython: failed to backup database'
 }

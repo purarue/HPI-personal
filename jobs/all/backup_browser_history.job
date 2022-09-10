@@ -7,12 +7,12 @@ ON_OS="${ON_OS:=$(on_machine)}"
 
 save_input_history() {
 	local BROWSER="${1:?Must provide browser to backup}"
-	browserexport save --form-history "${BROWSER}" --to "$(python3 -m my.utils.backup_to browsing_form_history)" || send-error "browserexport: failed to backup ${BROWSER} form history..."
+	browserexport save --form-history "${BROWSER}" --to "$(backup_to browsing_form_history)" || send-error "browserexport: failed to backup ${BROWSER} form history..."
 }
 
 save_database() {
 	local BROWSER="${1:?Must provide browser to backup}"
-	browserexport save -b "${BROWSER}" --to "$(python3 -m my.utils.backup_to browsing)" || send-error "browserexport: failed to backup ${BROWSER} database..."
+	browserexport save -b "${BROWSER}" --to "$(backup_to browsing)" || send-error "browserexport: failed to backup ${BROWSER} database..."
 }
 
 evry 1 week -backup_browser_history && {

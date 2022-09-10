@@ -3,5 +3,5 @@
 
 evry 2 weeks -backup_safari && {
 	printlog "browserexport:backing up safari history databases..."
-	browserexport save -b safari --to "$(python3 -m my.utils.backup_to browsing)" || send-error 'browserexport: failed to backup safari database...'
+	browserexport save -b safari --to "$(backup_to browsing)" || send-error 'browserexport: failed to backup safari database...'
 }
