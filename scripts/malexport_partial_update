@@ -1,6 +1,34 @@
 #!/usr/bin/env bash
+# if -e is provided, just does export
+# if -h is provided, just does history
+# otherwise, does both
 
-set -e
+main() {
+	local export history noflags
+	export=''
+	history=''
+	noflags=''
+	while getopts eh opt; do
+		case "$opt" in
+		e)
+			export=1
+			;;
+		h)
+			history=1
+			;;
+		*) ;;
+		esac
+	done
+	shift "$((OPTIND - 1))"
+	[[ -z "$export" && -z "$history" ]] && noflags=1
+	if [[ -n "$export" || -n "$noflags" ]]; then
+		echo 'Running export...' >&2
+		malexport update export -u "$MAL_USERNAME" || return $?
+	fi
+	if [[ -n "$history" || -n "$noflags" ]]; then
+		echo 'Downloading recent history...' >&2
+		MALEXPORT_EPISODE_LIMIT="${1:-1}" malexport update history -u "$MAL_USERNAME" -o anime -c "${2:-5}" || return $?
+	fi
+}
 
-malexport update export -u "$MAL_USERNAME"
-MALEXPORT_EPISODE_LIMIT="${1:-1}" malexport update history -u "$MAL_USERNAME" -o anime -c "${2:-5}"
+main "$@" || exit $?
