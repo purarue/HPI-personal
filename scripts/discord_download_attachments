@@ -81,6 +81,5 @@ def main(discord_attachments_dir: Path) -> None:
             assert target.stat().st_size > 0, str(target)
 
 
-
 if __name__ == "__main__":
     main()
