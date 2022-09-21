@@ -2,7 +2,7 @@
 
 wait-for-internet -q --timeout 10 || exit 0
 
-evry 1 week -backup_trakt && {
+evry 1 day -backup_trakt && {
 	printlog "traktexport:Running full export..."
 	arctee -r 3 "$(backup_to trakt)/{utcnow}-full.json" -- python3 -m traktexport export purplepinapples || send-error 'traktexport: failed to export account'
 }
