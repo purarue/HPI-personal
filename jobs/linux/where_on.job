@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+evry 1 day -where-on && {
+	printlog 'where-on:updating database...'
+	where-on gen "${HPIDATA}/where-on.json"
+}

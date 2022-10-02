@@ -11,24 +11,26 @@ import os
 import sys
 import json
 from pathlib import Path
-from typing import Sequence, Iterator, Optional, List, Tuple
+from typing import Sequence, Iterator, Optional, List, Tuple, TYPE_CHECKING
 
 import click
-from my.location.all import locations
-from my.location.common import Location
+
+if TYPE_CHECKING:
+    from my.location.common import Location
 
 
 Model = Tuple[float, float, int]
 
 
-def _serialize(loc: Location) -> Model:
+def _serialize(loc: "Location") -> Model:
     return (loc.lat, loc.lon, int(loc.dt.timestamp()))
 
 
 def generate(*, accuracy_filter: int, distance_filter: int) -> Iterator[Model]:
     import geopy.distance
+    from my.location.all import locations
 
-    locs: List[Location] = [
+    locs: List["Location"] = [
         loc
         for loc in locations()
         if loc.accuracy is not None and loc.accuracy < accuracy_filter
@@ -40,8 +42,7 @@ def generate(*, accuracy_filter: int, distance_filter: int) -> Iterator[Model]:
         last_latlon = (last.lat, last.lon)
         cur_latlon = (cur.lat, cur.lon)
         dist = geopy.distance.distance(last_latlon, cur_latlon)
-        dist_metres = dist.km * 1000
-        if dist_metres > distance_filter:
+        if dist.m > distance_filter:
             yield _serialize(cur)
             last = cur
 
@@ -57,7 +58,7 @@ def main():
 @click.option(
     "--distance-filter",
     type=int,
-    default=250,
+    default=100,
     help="distance (in metres) to require to create a new data point",
 )
 @click.option(
@@ -71,8 +72,9 @@ def gen(output: Optional[str], distance_filter: int, accuracy_filter: int) -> No
     """
     generates the database which stores where I was at particular times
 
-    the distance filter removes duplicate points which return data within some range,
-    defaults to 250m
+    the distance filter removes duplicate points
+    which return data within some range,
+    defaults to 100m
     """
     res = list(
         generate(distance_filter=distance_filter, accuracy_filter=accuracy_filter)
@@ -111,11 +113,12 @@ def _parse_datetimes(dates: Sequence[str]) -> Iterator[int]:
 
 
 def default_db() -> Optional[Path]:
-    defaults = [Path("~/.cache/where-on.json")]
+    defaults: List[Path] = []
     if "HPIDATA" in os.environ:
-        defaults.append(Path(os.environ["HPIDATA"]) / "where-on.json")
+        defaults.append(Path(os.environ["HPIDATA"]))
+    defaults.extend([Path("~/.local/share/"), Path("~/.cache/")])
     for d in defaults:
-        dd = d.expanduser()
+        dd = d.expanduser() / "where-on.json"
         if dd.exists():
             return dd
     return None
