@@ -196,7 +196,11 @@ def _parse_datetimes(dates: Sequence[str]) -> Iterator[int]:
     import dateparser
 
     for d in dates:
-        dt = dateparser.parse(d)
+        ds = d.strip()
+        if len(ds) == 0:
+            click.echo(f"Recieved no input", err=True)
+            sys.exit(1)
+        dt = dateparser.parse(ds)
         if dt is None:
             click.echo(f"Could not parse {d} into a date", err=True)
             sys.exit(1)
