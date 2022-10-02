@@ -71,7 +71,6 @@ def _home(on_dt: datetime) -> ModelDt:
     ndt = _naive(on_dt)
     for dt, (lat, lon) in _homes(reverse=True):
         if ndt >= _naive(dt):
-            click.echo(f"matched {dt} {lat} {lon} for {on_dt}")
             return (lat, lon, _naive(dt))
 
     # default to last home
