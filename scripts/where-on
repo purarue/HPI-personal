@@ -1,0 +1,146 @@
+#!/usr/bin/env python3
+
+"""
+figure out where I was on a date
+
+saves to a database once a day to update
+accepts any sort of date-like string and queries the db
+"""
+
+import os
+import sys
+import json
+from pathlib import Path
+from typing import Sequence, Iterator, Optional, List, Tuple
+
+import click
+from my.location.all import locations
+from my.location.common import Location
+
+
+Model = Tuple[float, float, int]
+
+
+def _serialize(loc: Location) -> Model:
+    return (loc.lat, loc.lon, int(loc.dt.timestamp()))
+
+
+def generate(*, accuracy_filter: int, distance_filter: int) -> Iterator[Model]:
+    import geopy.distance
+
+    locs: List[Location] = [
+        loc
+        for loc in locations()
+        if loc.accuracy is not None and loc.accuracy < accuracy_filter
+    ]
+    locs.sort(key=lambda l: l.dt)
+    last = locs[0]
+    yield _serialize(last)
+    for cur in locs[1:]:
+        last_latlon = (last.lat, last.lon)
+        cur_latlon = (cur.lat, cur.lon)
+        dist = geopy.distance.distance(last_latlon, cur_latlon)
+        dist_metres = dist.km * 1000
+        if dist_metres > distance_filter:
+            yield _serialize(cur)
+            last = cur
+
+
+@click.group()
+def main():
+    """
+    figure out where I was on a date
+    """
+
+
+@main.command(short_help="generate database")
+@click.option(
+    "--distance-filter",
+    type=int,
+    default=250,
+    help="distance (in metres) to require to create a new data point",
+)
+@click.option(
+    "--accuracy-filter",
+    type=int,
+    default=300,
+    help="accuracy required for location data",
+)
+@click.argument("OUTPUT", type=click.Path(path_type=Path), required=False)
+def gen(output: Optional[str], distance_filter: int, accuracy_filter: int) -> None:
+    """
+    generates the database which stores where I was at particular times
+
+    the distance filter removes duplicate points which return data within some range,
+    defaults to 250m
+    """
+    res = list(
+        generate(distance_filter=distance_filter, accuracy_filter=accuracy_filter)
+    )
+    if output is None:
+        click.echo(json.dumps(res))
+    else:
+        Path(output).write_text(json.dumps(res))
+
+
+def _load_db(db_file: Path) -> List[Model]:
+    with open(db_file, "r") as f:
+        data = json.load(f)
+        assert isinstance(data, list)
+        return data
+
+
+def run_query(timestamp: int, db: List[Model]) -> Tuple[float, float]:
+    for (lat, lon, ts) in db:
+        if ts > timestamp:
+            return lat, lon
+    else:
+        raise RuntimeError("Could not find matching location")
+
+
+def _parse_datetimes(dates: Sequence[str]) -> Iterator[int]:
+    import dateparser
+
+    for d in dates:
+        dt = dateparser.parse(d)
+        if dt is None:
+            click.echo(f"Could not parse {d} into a date", err=True)
+            sys.exit(1)
+        else:
+            yield int(dt.timestamp())
+
+
+def default_db() -> Optional[Path]:
+    defaults = [Path("~/.cache/where-on.json")]
+    if "HPIDATA" in os.environ:
+        defaults.append(Path(os.environ["HPIDATA"]) / "where-on.json")
+    for d in defaults:
+        dd = d.expanduser()
+        if dd.exists():
+            return dd
+    return None
+
+
+@main.command(short_help="query database")
+@click.option(
+    "--db",
+    help="read from database",
+    type=click.Path(exists=True, path_type=Path),
+    required=True,
+    default=default_db(),
+)
+@click.option("--url/--no-url", is_flag=True, help="print google location URL")
+@click.argument("DATE", type=str, required=True, nargs=-1)
+def query(db: Path, url: bool, date: Sequence[str]) -> None:
+    dts = list(_parse_datetimes(date))
+    data = _load_db(db)
+    for d in dts:
+        lat, lon = run_query(d, db=data)
+        if url:
+            click.echo(f"https://www.google.com/search?q={lat}%2C{lon}")
+        else:
+            click.echo(f"{lat},{lon}")
+
+
+if __name__ == "__main__":
+    main()
