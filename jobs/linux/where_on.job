@@ -2,5 +2,5 @@
 
 evry 1 day -where-on && {
 	printlog 'where-on:updating database...'
-	where-on gen | jq -c | sponge "${HPIDATA}/where-on.json"
+	where-on gen "${HPIDATA}/where-on.json" || send-error 'where-on: failed to update database'
 }
