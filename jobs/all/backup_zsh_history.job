@@ -1,7 +1,7 @@
 #!/bin/bash
 # backup my zsh history
 
-evry 2 days -backup_zsh_history && {
+evry 12 hours -backup_zsh_history && {
 	readonly ZSH_HIST_FILE="${ZDOTDIR:?ZDOTDIR environment variable not set}/.zsh_history"
 	printlog "zsh_history:Backing up zsh history..."
 	arctee "$(backup_to zsh_history)/$(on_machine)-$(tstamp)" -- cat "$ZSH_HIST_FILE" || send-error 'zsh: failed to backup zsh history file'
