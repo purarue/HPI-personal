@@ -13,8 +13,6 @@ Then 'python3 -m my.location.where_db query' accepts any sort of date-like strin
 printing the latitude/longitude.
 """
 
-# TODO: could display this nicely in the terminal or something? or grab more information from location by querying some location service
-
 import json
 import time
 from collections import defaultdict
