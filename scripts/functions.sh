@@ -60,5 +60,8 @@ alias albums-recommended-desc='albums-recommended | albums-describe'
 
 alias where_db='python3 -m my.location.where_db'
 wq() {
-	where_db query "$*" -o google_url
+	local -a args=()
+	args+=(-o plain -o google_url)
+	wait-for-internet --timeout 1 && args+=(-o geolocate)
+	where_db query "$*" "${args[@]}"
 }

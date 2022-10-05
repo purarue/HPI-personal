@@ -16,6 +16,7 @@ printing the latitude/longitude.
 # TODO: could display this nicely in the terminal or something? or grab more information from location by querying some location service
 
 import json
+import time
 from collections import defaultdict
 from pathlib import Path
 from typing import (
@@ -327,8 +328,9 @@ def main() -> None:
 @click.option(
     "-o",
     "--output",
-    type=click.Choice(["plain", "google_url", "json"]),
-    default="plain",
+    type=click.Choice(["plain", "google_url", "geolocate", "json"]),
+    multiple=True,
+    default=("plain",),
     help="how to print output (latitude/longitude)",
 )
 @click.option(
@@ -342,27 +344,39 @@ def main() -> None:
     "DATE", type=click.UNPROCESSED, callback=_parse_datetimes, required=True, nargs=-1
 )
 def query(
-    db: Path, output: str, around: Optional[timedelta], date: Iterable[int]
+    db: Path, output: Sequence[str], around: Optional[timedelta], date: Iterable[int]
 ) -> None:
     """
     Queries the current database to figure out where I was on a particular date
     """
     dts = list(date)
     fts = datetime.fromtimestamp  # 'from timestamp'
+    output_fmts = set(output)
     for d in dts:
         res = list(_run_query(d, db=list(locations(db)), around=around))
         if len(res) == 0 and around is not None:
             medium(f"No locations found {around} around timestamp {fts(d)}")
-        if output in ["google_url", "plain"]:
-            for lat, lon, ts in res:
-                if output == "plain":
-                    if around:
-                        click.echo(f"{fts(ts)} {lat},{lon}")
-                    else:
-                        click.echo(f"{lat},{lon}")
+        for lat, lon, ts in res:
+            if "plain" in output_fmts:
+                if around:
+                    click.echo(f"{fts(ts)} {lat},{lon}")
                 else:
-                    click.echo(f"https://www.google.com/search?q={lat}%2C{lon}")
-        else:
+                    click.echo(f"{lat},{lon}")
+            if "google_url" in output_fmts:
+                click.echo(f"https://www.google.com/search?q={lat}%2C{lon}")
+            if "geolocate" in output_fmts:
+                import geopy.geocoders  # type: ignore[import]
+
+                nom = geopy.geocoders.Nominatim(
+                    user_agent="seanbreckenridge/HPI-personal/where_db",
+                )
+                info = nom.reverse((lat, lon), timeout=3)  # type: ignore
+                click.echo(str(info))
+                # only sleep if we're making more than one request
+                if len(res) > 1 or len(dts) > 1:
+                    time.sleep(1)
+
+        if "json" in output_fmts:
             from my.core.serialize import dumps
 
             click.echo(dumps([ModelDt(lat, lon, fts(ts)) for lat, lon, ts in res]))
