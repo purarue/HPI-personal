@@ -37,7 +37,7 @@ from my.location.common import Location, LatLon
 
 from my.config import location
 
-
+# see https://github.com/seanbreckenridge/dotfiles/blob/master/.config/my/my/config/__init__.py for an example of config
 @dataclass
 class user_config(location.where_db):  # type: ignore
     # accuracy for locations to be able to use them
