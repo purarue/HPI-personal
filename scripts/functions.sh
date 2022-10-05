@@ -65,3 +65,12 @@ wq() {
 	wait-for-internet --timeout 1 && args+=(-o geolocate)
 	where_db query "$*" "${args[@]}"
 }
+
+# https://github.com/seanbreckenridge/mapscii-at
+wq-mapscii() {
+	local data lat lon
+	data="$(where_db query "$*" -o json)" || return $?
+	lat="$(jq '.[].lat' <<<"$data")"
+	lon="$(jq '.[].lon' <<<"$data")"
+	mapscii-at "$lat" "$lon" --zoom 12
+}
