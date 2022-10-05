@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+
+from my.config import location
+from pathlib import Path
+
+loc = Path(location.where_db.database_location)  # type: ignore
+print(str(loc.expanduser().absolute()))
