@@ -53,3 +53,12 @@ albums-filter-genre() {
 
 alias albums-recommended='albums-to-listen -s | albums-filter-reason Recommendation'
 alias albums-recommended-desc='albums-recommended | albums-describe'
+
+########################
+# my.location.where_db
+########################
+
+alias where_db='python3 -m my.location.where_db'
+wq() {
+	where_db query "$*" --url
+}

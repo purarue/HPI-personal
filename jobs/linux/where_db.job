@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-evry 1 day -where_db && {
+evry 6 hours -where_db && {
 	printlog 'where_db:updating database...'
 	arctee "$(where-db-location)" -- hpi query my.location.where_db.gen || send-error 'where_on: failed to update database'
 }

@@ -9,20 +9,30 @@ re-using old locations for holes in data sources
 In the background I run 'hpi query my.location.where_db.gen > ~/data/where_db.json' to save to a
 database once a day to update
 
-Then 'python3 -m my.location.where_db' accepts any sort of date-like string and queries the db
-printing the latitude/longitute.
-
-TODO: could display this nicely in the terminal or something? or grab more information from location by querying some location service
+Then 'python3 -m my.location.where_db query' accepts any sort of date-like string and queries the db
+printing the latitude/longitude.
 """
+
+# TODO: could display this nicely in the terminal or something? or grab more information from location by querying some location service
 
 import json
 from collections import defaultdict
 from pathlib import Path
-from typing import Sequence, Iterator, Optional, List, Tuple, Mapping, NamedTuple
+from typing import (
+    Iterator,
+    Optional,
+    List,
+    Tuple,
+    Mapping,
+    NamedTuple,
+    Iterable,
+    Sequence,
+)
 from functools import cache
 from datetime import datetime, date, timedelta
 
 from my.core import make_config, PathIsh, dataclass
+from my.core.warnings import medium
 from my.location.common import Location, LatLon
 
 from my.config import location
@@ -118,9 +128,9 @@ def generate_from_locations() -> Iterator[ModelDt]:
 @cache
 def _homes(reverse: bool = False) -> List[Tuple[datetime, LatLon]]:
     """cached home data"""
-    from my.location.home import config
+    from my.location.home import config as home_config
 
-    hist: List[Tuple[datetime, LatLon]] = list(config._history)
+    hist: List[Tuple[datetime, LatLon]] = list(home_config._history)
     hist.sort(key=lambda data: data[0], reverse=reverse)
     return hist
 
@@ -170,9 +180,12 @@ def generate() -> Iterator[ModelDt]:
     # those for a week instead of home
     last_accurate: Optional[ModelDt] = None
 
+    # go past one day, incase of timezone-issues
+    tomorrow = datetime.now() + timedelta(days=1)
+
     # loop through a day at a time, either using home
     # or using the dates generated from locations
-    while cur <= datetime.now():
+    while cur <= tomorrow:
         # if we dont have accurate up to date locations
         if cur.date() not in loc_on_day:
             # continue using last accurate timestamp/location till we have a new one
@@ -223,7 +236,6 @@ def _db() -> Optional[Path]:
 
 
 def locations(db_location: Optional[Path] = None) -> Iterator[ModelRaw]:
-    from my.core.warnings import medium
 
     if db_location is None:
         db_location = _db()
@@ -238,31 +250,73 @@ def locations(db_location: Optional[Path] = None) -> Iterator[ModelRaw]:
     yield from iter(data)
 
 
-def _parse_datetimes(dates: Sequence[str]) -> Iterator[int]:
+def _parse_datetimes(
+    ctx: click.Context, param: click.Argument, value: Sequence[str]
+) -> Iterator[int]:
     import dateparser
+    import warnings
 
-    for d in dates:
+    # remove pytz warning from dateparser module
+    warnings.filterwarnings("ignore", "The localize method is no longer necessary")
+
+    for d in value:
         ds = d.strip()
         if len(ds) == 0:
-            click.echo("Recieved empty string input", err=True)
-            return
+            raise click.BadParameter(f"Received empty string as input")
         dt = dateparser.parse(ds)
         if dt is None:
-            click.echo(f"Could not parse {d} into a date", err=True)
-            continue
+            raise click.BadParameter(f"Could not parse '{d}' into a date")
         else:
             yield int(dt.timestamp())
 
 
-def _run_query(epoch: int, db: Database) -> Tuple[float, float]:
-    for (lat, lon, ts) in db:
-        if ts > epoch:
-            return lat, lon
-    lat, lon, _ = db[-1]
-    return lat, lon
+def _parse_timedelta(
+    ctx: click.Context, param: click.Argument, value: Optional[str]
+) -> Optional[timedelta]:
+    if value is None:
+        return None
+
+    from my.core.query_range import parse_timedelta_string
+
+    try:
+        return parse_timedelta_string(value)
+    except ValueError as v:
+        raise click.BadParameter(str(v))
 
 
-@click.command(short_help="query database")
+def _run_query(
+    epoch: int,
+    db: Database,
+    around: Optional[timedelta] = None,
+) -> Iterator[ModelRaw]:
+    if epoch < db[0][2]:
+        medium(
+            f"Query datetime is before first location in db, returning first location"
+        )
+        yield db[0]
+        return
+
+    if around is None:
+        for loc in db:
+            if loc[2] >= epoch:
+                yield loc
+                return
+
+        medium("Matched no timestamp, returning most recent location")
+        yield db[-1]
+    else:
+        seconds = around.total_seconds()
+        for loc in db:
+            if abs(loc[2] - epoch) <= seconds:
+                yield loc
+
+
+@click.group(help=__doc__)
+def main() -> None:
+    pass
+
+
+@main.command(short_help="query database")
 @click.option(
     "--db",
     help="read from database",
@@ -270,21 +324,49 @@ def _run_query(epoch: int, db: Database) -> Tuple[float, float]:
     required=True,
     default=_db(),
 )
-@click.option("--url/--no-url", is_flag=True, help="print google location URL")
-@click.argument("DATE", type=str, required=True, nargs=-1)
-def query(db: Path, url: bool, date: Sequence[str]) -> None:
+@click.option(
+    "-o",
+    "--output",
+    type=click.Choice(["plain", "google_url", "json"]),
+    default="plain",
+    help="how to print output (latitude/longitude)",
+)
+@click.option(
+    "-a",
+    "--around",
+    type=click.UNPROCESSED,
+    callback=_parse_timedelta,
+    default=None,
+)
+@click.argument(
+    "DATE", type=click.UNPROCESSED, callback=_parse_datetimes, required=True, nargs=-1
+)
+def query(
+    db: Path, output: str, around: Optional[timedelta], date: Iterable[int]
+) -> None:
     """
     Queries the current database to figure out where I was on a particular date
     """
-    dts = list(_parse_datetimes(date))
-    data = list(locations(db))
+    dts = list(date)
+    fts = datetime.fromtimestamp  # 'from timestamp'
     for d in dts:
-        lat, lon = _run_query(d, db=data)
-        if url:
-            click.echo(f"https://www.google.com/search?q={lat}%2C{lon}")
+        res = list(_run_query(d, db=list(locations(db)), around=around))
+        if len(res) == 0 and around is not None:
+            medium(f"No locations found {around} around timestamp {fts(d)}")
+        if output in ["google_url", "plain"]:
+            for lat, lon, ts in res:
+                if output == "plain":
+                    if around:
+                        click.echo(f"{fts(ts)} {lat},{lon}")
+                    else:
+                        click.echo(f"{lat},{lon}")
+                else:
+                    click.echo(f"https://www.google.com/search?q={lat}%2C{lon}")
         else:
-            click.echo(f"{lat},{lon}")
+            from my.core.serialize import dumps
+
+            click.echo(dumps([ModelDt(lat, lon, fts(ts)) for lat, lon, ts in res]))
 
 
 if __name__ == "__main__":
-    query()
+    main()
