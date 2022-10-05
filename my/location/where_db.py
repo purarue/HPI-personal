@@ -97,11 +97,12 @@ def generate_from_locations() -> Iterator[ModelDt]:
     locs.sort(key=lambda l: l.dt)
     last: Location = locs[0]
     yield _serialize(last)
-    new_point_distance: timedelta = (
+    new_point_distance = (
         config.new_point_duration
         if config.new_point_duration is not None
         else timedelta(hours=3)
     )
+    assert isinstance(new_point_distance, timedelta)
 
     for cur in locs[1:]:
         last_latlon: LatLon = (last.lat, last.lon)
