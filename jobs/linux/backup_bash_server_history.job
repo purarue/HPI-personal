@@ -8,7 +8,7 @@ backup_server() {
 	arctee -r 3 "$(backup_to bash_history)/{utcnow}-${SERVER}" -- ssh "${SERVER}" 'cat .bash_history' || send-error "bash_server_history: failed to backup bash history file from ${SERVER}"
 }
 
-evry 2 days -backup_bash_server_history && {
+evry 1 day -backup_bash_server_history && {
 	printlog "bash_server_history:Backing up bash history from servers..."
 	for server in vultr seedbox; do
 		backup_server "${server}"
