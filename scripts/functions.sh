@@ -68,9 +68,7 @@ wq() {
 
 # https://github.com/seanbreckenridge/mapscii-at
 wq-mapscii() {
-	local data lat lon
-	data="$(where_db query "$*" -o json)" || return $?
-	lat="$(jq '.[].lat' <<<"$data")"
-	lon="$(jq '.[].lon' <<<"$data")"
-	mapscii-at "$lat" "$lon" --zoom 12
+	local data
+	data="$(where_db query "$*" -o plain)" || return $?
+	mapscii-at "$data" --zoom 12
 }
