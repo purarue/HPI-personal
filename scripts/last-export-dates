@@ -10,8 +10,6 @@ local data is over 90 days old
 from time import time
 from datetime import datetime, timedelta
 
-from subprocess import check_call
-
 import my.google.takeout.parser
 import my.discord.data_export
 
@@ -21,9 +19,7 @@ from my.core.query_range import select_range
 import click
 from tabulate import tabulate
 
-
-def notify(msg: str) -> None:
-    check_call(["notify", "last-export-dates", f"{msg}"])
+from seanb.notify import notify
 
 
 day = timedelta(days=1).total_seconds()
@@ -55,7 +51,10 @@ def main(notify_if_over_days: int) -> None:
         days_since = (time() - mdt.timestamp()) / day
         lines.append([name, round(days_since, 3)])
         if days_since > notify_if_over_days:
-            notify(f"{name} exported over {notify_if_over_days} days ago")
+            notify(
+                f"{name} exported over {notify_if_over_days} days ago",
+                title="last-export-dates",
+            )
 
     print(
         tabulate(
