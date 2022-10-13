@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 
+"""
+For exports which I have to do manually --
+i.e. go to some website, login, request and then
+download, this reminds me to do it when my newest
+local data is over 90 days old
+"""
+
+from time import time
 from datetime import datetime, timedelta
 
 from subprocess import check_call
@@ -18,7 +26,10 @@ def notify(msg: str) -> None:
     check_call(["notify", "last-export-dates", f"{msg}"])
 
 
-@click.command()
+day = timedelta(days=1).total_seconds()
+
+
+@click.command(help=__doc__)
 @click.option("-n", "--notify-if-over-days", type=int, default=90)
 def main(notify_if_over_days: int) -> None:
     lines = []
@@ -26,20 +37,22 @@ def main(notify_if_over_days: int) -> None:
         ("Google Takeout", my.google.takeout.parser.events),
         ("Discord Data Export", my.discord.data_export.messages),
     ]:
+        # function which when given an item returns the datetime
         attrfunc = attribute_func(
             next(filter(lambda o: o is not None, func())),
             where=lambda o: isinstance(o, datetime),
         )
         assert attrfunc is not None
+
+        # sort function results by datetime, drop anything that cant be sorted
         itr = select_range(func(), order_by_value_type=datetime, drop_unsorted=True)
         # remove nones, attrfunc(o) will return the datetime
-        itr = filter(lambda o: attrfunc(o) is not None, itr)  # type: ignore
-        # now that there are no none values, we can extract the largest
-        maxval = max(itr, key=attrfunc)  # type: ignore
-        maxdt = attrfunc(maxval)
-        assert isinstance(maxdt, datetime)
-        diff = datetime.now().timestamp() - maxdt.timestamp()
-        days_since = diff / timedelta(days=1).total_seconds()
+        # and then we can extract the largest
+        maxval = max(filter(lambda o: attrfunc(o) is not None, itr), key=attrfunc)  # type: ignore
+        # calculate diff with now
+        mdt = attrfunc(maxval)
+        assert isinstance(mdt, datetime)
+        days_since = (time() - mdt.timestamp()) / day
         lines.append([name, round(days_since, 3)])
         if days_since > notify_if_over_days:
             notify(f"{name} exported over {notify_if_over_days} days ago")
