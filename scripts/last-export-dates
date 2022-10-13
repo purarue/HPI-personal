@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+
+from datetime import datetime, timedelta
+
+from subprocess import check_call
+
+import my.google.takeout.parser
+import my.discord.data_export
+
+from my.core.query import attribute_func
+from my.core.query_range import select_range
+
+import click
+from tabulate import tabulate
+
+
+def notify(msg: str) -> None:
+    check_call(["notify", "last-export-dates", f"{msg}"])
+
+
+@click.command()
+@click.option("-n", "--notify-if-over-days", type=int, default=90)
+def main(notify_if_over_days: int) -> None:
+    lines = []
+    for name, func in [
+        ("Google Takeout", my.google.takeout.parser.events),
+        ("Discord Data Export", my.discord.data_export.messages),
+    ]:
+        attrfunc = attribute_func(
+            next(filter(lambda o: o is not None, func())),
+            where=lambda o: isinstance(o, datetime),
+        )
+        assert attrfunc is not None
+        itr = select_range(func(), order_by_value_type=datetime, drop_unsorted=True)
+        # remove nones, attrfunc(o) will return the datetime
+        itr = filter(lambda o: attrfunc(o) is not None, itr)  # type: ignore
+        # now that there are no none values, we can extract the largest
+        maxval = max(itr, key=attrfunc)  # type: ignore
+        maxdt = attrfunc(maxval)
+        assert isinstance(maxdt, datetime)
+        diff = datetime.now().timestamp() - maxdt.timestamp()
+        days_since = diff / timedelta(days=1).total_seconds()
+        lines.append([name, round(days_since, 3)])
+        if days_since > notify_if_over_days:
+            notify(f"{name} exported over {notify_if_over_days} days ago")
+
+    print(
+        tabulate(
+            lines,
+            headers=(
+                "Export",
+                "Days Since",
+            ),
+        )
+    )
+
+
+if __name__ == "__main__":
+    main()
