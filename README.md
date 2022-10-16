@@ -1,4 +1,4 @@
-These are personal modules that I don't see anyone else using, and some of my personal scripts/jobs
+These are personal modules that I don't see anyone else using, and some of my personal scripts/jobs to save/backup data
 
 - `my.old_forums`, parses random forum posts and achievements from sites I used to use in the past, see [`old_forums`](https://github.com/seanbreckenridge/old_forums)
 - `my.nextalbums`, grabbing when I listened to music albums/my ratings using my [giant spreadsheet](https://sean.fish/s/albums). Handled by [`nextalbums export`](https://github.com/seanbreckenridge/albums)

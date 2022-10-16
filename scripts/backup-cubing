@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# launch browser
+# if this has already launched once while the script is running
+# it doesn't launch again
+launched=
+launch_browser() {
+	((launched)) && return
+	setsid -f "$BROWSER"
+	sleep 2
+	launched=1
+}
+
+# https://github.com/seanbreckenridge/cstimer-save-server
+# open cstimer, so that my solves are saved
+evry 1 week -launch-cstimer && {
+	launch_browser
+	openurl 'https://cstimer.net'
+}
+
+cubers_io_files() {
+	find "${XDG_DOWNLOAD_DIR:-$HOME/Downloads}/" -name '*twistytimer*' "$@"
+}
+
+# run this before exporting, so it doesnt move a partially downloaded
+# file from downloads, it'll back it up next time I run the script
+# (this is called in https://sean.fish/d/housekeeping?dark)
+evry 5 minutes -move-cubers-io && {
+	to_dir="$(backup_to 'cubing/cubers_io')"
+	cubers_io_files "$@"
+	cubers_io_files -exec mv -t "$to_dir" {} +
+}
+
+# open the api export page, uses my logged in session and downloads the file
+evry 1 week -save-cubers-io && {
+	launch_browser
+	openurl 'https://www.cubers.io/api/export?type=twisty_timer'
+}
