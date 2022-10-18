@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+evry 1 hour -twistytimer && {
+
+	rsync -Pavh ~/shared/TwistyTimer/Backup/ ~/data/cubing/phone_twistytimer
+}
