@@ -15,6 +15,7 @@ chess_backup() {
 		printlog "chess: Running ${part} export..."
 		arctee -r 3 "${BACKUP_DIR}/${part}${FILEPART}.json" -- python3 -m chess_export "${part}" export seanbreckenridge || send-error "chessdotcom export: failed to backup $part games"
 	done
+	json-compress "${BACKUP_DIR}/"*.json
 }
 
 evry 1 week -backup_chess && chess_backup '_{utcnow}'  # save to a timestamped file, in case
