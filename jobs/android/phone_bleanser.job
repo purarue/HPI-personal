@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+evry 1 day -bleanser-runall && {
+	bleanser-runall bleanser_sean.modules.smscalls
+	review-removed-dir
+}
