@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
-evry 1 day -bleanser-runall && {
+evry 4 hours -bleanser-phone && {
+	sms_size="$(dir-size ~/data/SMSBackups)"
+	if ((sms_size < 250000000)); then
+		echo 'SMSBackups dir less than 250MB, exiting...' 1>&2
+		exit 0
+	fi
 	bleanser-runall bleanser_sean.modules.smscalls
 	review-removed-dir
 }
