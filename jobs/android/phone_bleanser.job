@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 evry 4 hours -bleanser-phone && {
-	sms_size="$(dir-size ~/data/SMSBackups)"
-	if ((sms_size < 250000000)); then
-		echo 'SMSBackups dir less than 250MB, exiting...' 1>&2
+	sms_size="$(find ~/data/SMSBackups -iname '*sms*' -type f | wc -l)"
+	if ((sms_size < 5)); then
+		echo 'SMSBackups dir has less than 5 exports, exiting...' 1>&2
 		exit 0
 	fi
 	bleanser-runall bleanser_sean.modules.smscalls
