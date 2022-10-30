@@ -7,5 +7,5 @@ evry 4 hours -bleanser-phone && {
 		exit 0
 	fi
 	bleanser-runall bleanser_sean.modules.smscalls
-	review-removed-dir
+	rm -vrf ~/.cache/removed
 }
