@@ -11,9 +11,25 @@ launch_browser() {
 	launched=1
 }
 
+# if this succeeds, a backup within the last week already exists
+last_cstimer_backup() {
+	local epochmillis diff
+	epochmillis="$(basename "$(newest "$(backup_to 'cubing/cstimer')")" | cut -d"." -f1)"
+	if [[ -z "$epochmillis" ]]; then
+		return 1
+	fi
+	diff=$(($(date +"%s") - $((epochmillis / 1000))))
+	# 604800 <=> 1 week
+	if ((diff > 604800)); then
+		return 1
+	fi
+	return 0
+}
+
 # https://github.com/seanbreckenridge/cstimer-save-server
 # open cstimer, so that my solves are saved
-evry 1 week -launch-cstimer && {
+# only do this if we havent already backed up in the last week
+last_cstimer_backup || {
 	launch_browser
 	openurl 'https://cstimer.net'
 }
