@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 evry 5 minutes -backup_git_doc_history && {
 	git_doc_history eva
 	git_doc_history frinkconv
