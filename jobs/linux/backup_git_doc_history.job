@@ -1,7 +1,7 @@
 #!/bin/bash
 
 evry 5 minutes -backup_git_doc_history && {
-	for backup in eva frinkconv mysql newsboat node plaintext_playlist ranger scramble_history todo; do
+	for backup in eva frinkconv mysql newsboat node plaintext_playlist ranger todo; do
 		printlog "git_doc_history: backing up $backup"
 		git_doc_history "$backup"
 	done
