@@ -40,22 +40,26 @@ def clean_file(jf: Path) -> None:
     https://github.com/seanbreckenridge/mpv-history-daemon
     """
     data = json.loads(jf.read_text())
-    for ts in list(data):
-        event_data = data[ts]
-        if metadata := event_data.get("metadata"):
-            if _has_priv_frames(metadata):
-                removed_keys = []
-                for k in list(metadata):
-                    kl = k.lower()
-                    for d in disallowed:
-                        if d in kl:
-                            metadata.pop(k)
-                            removed_keys.append(k)
-                    for d in disallowed_startswith:
-                        if kl.startswith(d):
-                            metadata.pop(k)
-                            removed_keys.append(k)
-                print(f"Removed {removed_keys}, fixed {metadata}")
+    blobs = [data]
+    if "mapping" in data:
+        blobs = data["mapping"].values()
+    for blob in blobs:
+        for ts in list(blob):
+            event_data = blob[ts]
+            if metadata := event_data.get("metadata"):
+                if _has_priv_frames(metadata):
+                    removed_keys = []
+                    for k in list(metadata):
+                        kl = k.lower()
+                        for d in disallowed:
+                            if d in kl:
+                                metadata.pop(k)
+                                removed_keys.append(k)
+                        for d in disallowed_startswith:
+                            if kl.startswith(d):
+                                metadata.pop(k)
+                                removed_keys.append(k)
+                    print(f"Removed {removed_keys}, fixed {metadata}")
     jf.write_text(json.dumps(data))
 
 
