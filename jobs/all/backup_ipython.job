@@ -1,9 +1,16 @@
 #!/bin/bash
-# backup current ipython database
+# backup current main and calculator profiles for ipython databases
 
 evry 2 days -backup_ipython && {
-	readonly IPYTHON_DB="${XDG_DATA_HOME}/ipython/profile_default/history.sqlite"
-	printlog "ipython:backing up history database..."
-	# https://github.com/seanbreckenridge/sqlite_backup
-	sqlite_backup "${IPYTHON_DB}" "$(backup_to ipython)/$(on_machine)-$(tstamp).sqlite" || send-error 'ipython: failed to backup database'
+	for profile in profile_default profile_calculator; do
+		ipython_db="${XDG_DATA_HOME}/ipython/${profile}/history.sqlite"
+		if [[ ! -e "$ipython_db" ]]; then
+			printf 'Profile at %s does not exist...' "$ipython_db" >&2
+			continue
+		fi
+		printlog "ipython:${profile}:backing up history database..."
+		target_dir="${profile/profile_/ipython_}"
+		# https://github.com/seanbreckenridge/sqlite_backup
+		sqlite_backup "${ipython_db}" "$(backup_to "$target_dir")/$(on_machine)-$(tstamp).sqlite" || send-error 'ipython: failed to backup database'
+	done
 }
