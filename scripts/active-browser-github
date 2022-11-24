@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+from typing import Iterator
+from urllib.parse import urlparse
+
+import click
+from more_itertools import unique_everseen
+from my.browser.active_browser import history
+
+
+def urls() -> Iterator[str]:
+    for hist in history():
+        if not hist.url.startswith("https://github.com/"):
+            continue
+        parts = urlparse(hist.url)
+        if parts.path.count("/") >= 2:
+            path_parts = parts.path.strip("/").split("/")
+            yield "https://github.com/" + "/".join(path_parts[0:2])
+
+
+@click.command()
+def main() -> None:
+    for url in unique_everseen(urls()):
+        print(url)
+
+
+if __name__ == "__main__":
+    main()
