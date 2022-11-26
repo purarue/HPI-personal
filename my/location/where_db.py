@@ -7,7 +7,7 @@ the config) heuristics, falling back to my.location.home if I don't have any dat
 re-using old locations for holes in data sources
 
 In the background I run 'hpi query my.location.where_db.gen > ~/data/where_db.json' to save to a
-database once a day to update
+database once every few hours to update
 
 Then 'python3 -m my.location.where_db query' accepts any sort of date-like string and queries the db
 printing the latitude/longitude.
