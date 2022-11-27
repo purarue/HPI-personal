@@ -8,31 +8,40 @@ local data is over 90 days old
 """
 
 from time import time
+from typing import Optional
 from datetime import datetime, timedelta
 
+import click
 import my.google.takeout.parser
 import my.discord.data_export
-
 from my.core.query import attribute_func
 from my.core.query_range import select_range
-
-import click
 from tabulate import tabulate
-
 from seanb.notify import notify
 
 
 day = timedelta(days=1).total_seconds()
 
 
-@click.command(help=__doc__)
-@click.option("-n", "--notify-if-over-days", type=int, default=90)
-def main(notify_if_over_days: int) -> None:
+@click.command(help=__doc__, context_settings={"max_content_width": 100})
+@click.option(
+    "-n",
+    "--override-days",
+    "_override",
+    type=int,
+    default=None,
+    help="If over this many days, notify/warn",
+)
+def main(_override: Optional[int]) -> None:
+    """
+    Warn me to do exports I do manually, periodicaly
+    """
     lines = []
-    for name, func in [
-        ("Google Takeout", my.google.takeout.parser.events),
-        ("Discord Data Export", my.discord.data_export.messages),
-    ]:
+    for name, func, days in (
+        ("Google Takeout", my.google.takeout.parser.events, 90),
+        ("Discord Data Export", my.discord.data_export.messages, 150),
+    ):
+        over_days = _override if _override is not None else days
         # function which when given an item returns the datetime
         attrfunc = attribute_func(
             next(filter(lambda o: o is not None, func())),
@@ -50,9 +59,11 @@ def main(notify_if_over_days: int) -> None:
         assert isinstance(mdt, datetime)
         days_since = (time() - mdt.timestamp()) / day
         lines.append([name, round(days_since, 3)])
-        if days_since > notify_if_over_days:
+        if days_since > over_days:
+            msg = f"{name} exported over {over_days} days ago"
+            click.echo(msg)
             notify(
-                f"{name} exported over {notify_if_over_days} days ago",
+                msg,
                 title="last-export-dates",
             )
 
