@@ -68,6 +68,7 @@ class user_config(location.where_db):  # type: ignore
 
 config = make_config(user_config)
 
+fts = datetime.fromtimestamp  # 'from timestamp'
 
 # just for loading/querying the database
 ModelRaw = Tuple[float, float, int]
@@ -283,6 +284,21 @@ def _parse_timedelta(
         raise click.BadParameter(str(v))
 
 
+def _parse_location(
+    ctx: click.Context, param: click.Argument, value: Optional[str]
+) -> Optional[Tuple[float, float]]:
+    if value is None:
+        return None
+    match value.strip().split(","):
+        case [loc1, loc2]:
+            try:
+                return float(loc1), float(loc2)
+            except ValueError as err:
+                raise click.BadParameter(f"Could not convert input to a float: {err}")
+        case _:
+            raise click.BadParameter(f"Could not convert {value} to a location")
+
+
 def _run_query(
     epoch: int,
     db: Database,
@@ -332,6 +348,14 @@ def main() -> None:
     help="how to print output (latitude/longitude)",
 )
 @click.option(
+    "--use-location",
+    type=click.UNPROCESSED,
+    callback=_parse_location,
+    required=False,
+    default=None,
+    help="manually provide the location to use",
+)
+@click.option(
     "-a",
     "--around",
     type=click.UNPROCESSED,
@@ -342,18 +366,28 @@ def main() -> None:
     "DATE", type=click.UNPROCESSED, callback=_parse_datetimes, required=True, nargs=-1
 )
 def query(
-    db: Path, output: Sequence[str], around: Optional[timedelta], date: Iterable[int]
+    db: Path,
+    use_location: Optional[Tuple[float, float]],
+    output: Sequence[str],
+    around: Optional[timedelta],
+    date: Iterable[int],
 ) -> None:
     """
     Queries the current database to figure out where I was on a particular date
     """
     dts = list(date)
-    fts = datetime.fromtimestamp  # 'from timestamp'
     output_fmts = set(output)
+    # if providing a location, default to now
+    if use_location is not None:
+        dts = [int(time.time())]
+    res: List[ModelRaw]
     for d in dts:
-        res = list(_run_query(d, db=list(locations(db)), around=around))
-        if len(res) == 0 and around is not None:
-            medium(f"No locations found {around} around timestamp {fts(d)}")
+        if use_location is None:
+            res = list(_run_query(d, db=list(locations(db)), around=around))
+            if len(res) == 0 and around is not None:
+                medium(f"No locations found {around} around timestamp {fts(d)}")
+        else:
+            res = [(use_location[0], use_location[1], d)]
         for lat, lon, ts in res:
             if "plain" in output_fmts:
                 if around:

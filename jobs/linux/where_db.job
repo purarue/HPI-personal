@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 evry 6 hours -where_db && {
+	source "$HPIDATA/tokens"
 	printlog 'where_db:updating database...'
 	arctee "$(where-db-location)" -- hpi query my.location.where_db.gen || send-error 'where_on: failed to update database'
 }
