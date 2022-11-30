@@ -48,7 +48,7 @@ def main(_override: Optional[int]) -> None:
     for name, func, days in (
         ("Google Takeout", my.google.takeout.parser.events, 90),
         ("Discord Data Export", my.discord.data_export.messages, 150),
-        ("TwistyTimer", _twistytimer, 14),
+        ("TwistyTimer", _twistytimer, 31),
     ):
         over_days = _override if _override is not None else days
         # function which when given an item returns the datetime

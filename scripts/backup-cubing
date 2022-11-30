@@ -1,26 +1,8 @@
 #!/usr/bin/env bash
 
-# if this succeeds, a backup within the last week already exists
-last_cstimer_backup() {
-	local newest_file
-	newest_file="$(newest "$(backup_to 'cubing/cstimer')")" || {
-		echo 'Failed to find newest file'
-		return 0
-	}
-	diff=$(($(epoch) - $(stat -c"%Y" "$newest_file")))
-	# 604800 <=> 1 week
-	if ((diff > 604800)); then
-		return 1
-	fi
-	return 0
-}
-
 # https://github.com/seanbreckenridge/cstimer-save-server
-# open cstimer, so that my solves are saved
-# only do this if we havent already backed up in the last week
-last_cstimer_backup || {
-	openurl 'http://localhost:4633/'
-}
+# https://sean.fish/d/cstimer?redirect
+evry 1 week -open-cstimr && openurl 'http://localhost:4633/'
 
 cubers_io_files() {
 	find "${XDG_DOWNLOAD_DIR:-$HOME/Downloads}/" -name '*twistytimer*' "$@"
