@@ -1,24 +1,13 @@
 #!/usr/bin/env bash
 
-# launch browser
-# if this has already launched once while the script is running
-# it doesn't launch again
-launched=
-launch_browser() {
-	((launched)) && return
-	setsid -f "$BROWSER"
-	sleep 2
-	launched=1
-}
-
 # if this succeeds, a backup within the last week already exists
 last_cstimer_backup() {
-	local epochmillis diff
-	epochmillis="$(basename "$(newest "$(backup_to 'cubing/cstimer')")" | cut -d"." -f1)"
-	if [[ -z "$epochmillis" ]]; then
-		return 1
-	fi
-	diff=$(($(date +"%s") - $((epochmillis / 1000))))
+	local newest_file
+	newest_file="$(newest "$(backup_to 'cubing/cstimer')")" || {
+		echo 'Failed to find newest file'
+		return 0
+	}
+	diff=$(($(epoch) - $(stat -c"%Y" "$newest_file")))
 	# 604800 <=> 1 week
 	if ((diff > 604800)); then
 		return 1
@@ -30,8 +19,7 @@ last_cstimer_backup() {
 # open cstimer, so that my solves are saved
 # only do this if we havent already backed up in the last week
 last_cstimer_backup || {
-	launch_browser
-	openurl 'https://cstimer.net'
+	openurl 'http://localhost:4633/'
 }
 
 cubers_io_files() {
@@ -41,14 +29,13 @@ cubers_io_files() {
 # run this before exporting, so it doesnt move a partially downloaded
 # file from downloads, it'll back it up next time I run the script
 # (this is called in https://sean.fish/d/housekeeping?dark)
-evry 5 minutes -move-cubers-io && {
+evry 1 hour -move-cubers-io && {
 	to_dir="$(backup_to 'cubing/cubers_io')"
 	cubers_io_files "$@"
 	cubers_io_files -exec mv -t "$to_dir" {} +
 }
 
 # open the api export page, uses my logged in session and downloads the file
-evry 1 week -save-cubers-io && {
-	launch_browser
+evry 4 weeks -save-cubers-io && {
 	openurl 'https://www.cubers.io/api/export?type=twisty_timer'
 }
