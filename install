@@ -34,7 +34,7 @@ pmain() {
 	pip_install -e . || return $?
 	module_deps || prompt_if_fails || return $?
 	# make sure personal editable packages are importable
-	python3 -c 'import nextalbums, budget' || prompt_if_fails || return $?
+	python3 -c 'import nextalbums' || prompt_if_fails || return $?
 }
 
 declare MY_MODULES

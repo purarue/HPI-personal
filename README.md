@@ -2,7 +2,6 @@ These are personal modules that I don't see anyone else using, and some of my pe
 
 - `my.old_forums`, parses random forum posts and achievements from sites I used to use in the past, see [`old_forums`](https://github.com/seanbreckenridge/old_forums)
 - `my.nextalbums`, grabbing when I listened to music albums/my ratings using my [giant spreadsheet](https://sean.fish/s/albums). Handled by [`nextalbums export`](https://github.com/seanbreckenridge/albums)
-- `my.mint`, bank account transactions/balance history from [my personal budget tool](https://github.com/seanbreckenridge/mint)
 - `my.location.where_db` acts as a sort of entrypoint to consume my location data -- lets me query where I was on a day, reverse geocode (using [Nominatim](https://nominatim.openstreetmap.org/ui/about.html)) lookup/query around a particular time
 
 ## Installation
