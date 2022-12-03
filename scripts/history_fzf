@@ -5,7 +5,7 @@ set -o pipefail
 
 # additional jq after you pick with fzf removes quotes (-r)
 #
-# unique: https://sean.fish/d/unique?dark
+# unique: https://github.com/seanbreckenridge/core/blob/main/shellscripts/unique
 
 URL="$(hpi query -s my.browser.all.history |
 	jq '"\(.url)|\(.metadata.description)"' |
