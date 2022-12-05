@@ -9,7 +9,7 @@ from my.location.gpslogger import inputs, _extract_locations
 @click.command()
 @click.option("-d", "--delim", help="delimiter", default=",")
 def main(delim: str) -> None:
-    latest = last(sorted(inputs(), key=lambda l: l.stat().st_mtime))
+    latest = last(sorted(inputs(), key=lambda loc: loc.stat().st_mtime))
     latest_loc = last(sorted(_extract_locations(latest), key=lambda loc: loc.dt))
     print(f"{latest_loc.lat}{delim}{latest_loc.lon}")
 

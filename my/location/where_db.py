@@ -36,9 +36,13 @@ from my.location.common import Location, LatLon
 
 from my.config import location
 
-# see https://github.com/seanbreckenridge/dotfiles/blob/master/.config/my/my/config/__init__.py for an example of config
+
 @dataclass
 class user_config(location.where_db):  # type: ignore
+    """
+    see https://github.com/seanbreckenridge/dotfiles/blob/master/.config/my/my/config/__init__.py for an example of config
+    """
+
     # accuracy for locations to be able to use them
     # defaults to 300m
     accuracy_filter: Optional[int] = None
@@ -104,7 +108,7 @@ def generate_from_locations() -> Iterator[ModelDt]:
         for loc in location_sources()
         if loc.accuracy is not None and loc.accuracy < use_accuracy
     ]
-    locs.sort(key=lambda l: l.dt)
+    locs.sort(key=lambda lc: lc.dt)
     last: Location = locs[0]
     yield _serialize(last)
     new_point_distance = (
@@ -262,7 +266,7 @@ def _parse_datetimes(
     for d in value:
         ds = d.strip()
         if len(ds) == 0:
-            raise click.BadParameter(f"Received empty string as input")
+            raise click.BadParameter("Received empty string as input")
         dt = dateparser.parse(ds)
         if dt is None:
             raise click.BadParameter(f"Could not parse '{d}' into a date")
@@ -306,7 +310,7 @@ def _run_query(
 ) -> Iterator[ModelRaw]:
     if epoch < db[0][2]:
         medium(
-            f"Query datetime is before first location in db, returning first location"
+            "Query datetime is before first location in db, returning first location"
         )
         yield db[0]
         return
