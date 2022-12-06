@@ -4,20 +4,8 @@
 # https://sean.fish/d/cstimer?redirect
 evry 1 week -open-cstimr && openurl 'http://localhost:4633/'
 
-cubers_io_files() {
-	find "${XDG_DOWNLOAD_DIR:-$HOME/Downloads}/" -name '*twistytimer*' "$@"
-}
-
-# run this before exporting, so it doesnt move a partially downloaded
-# file from downloads, it'll back it up next time I run the script
-# (this is called in https://sean.fish/d/housekeeping?dark)
-evry 1 hour -move-cubers-io && {
-	to_dir="$(backup_to 'cubing/cubers_io')"
-	cubers_io_files "$@"
-	cubers_io_files -exec mv -t "$to_dir" {} +
-}
-
 # open the api export page, uses my logged in session and downloads the file
 evry 4 weeks -save-cubers-io && {
 	openurl 'https://www.cubers.io/api/export?type=twisty_timer'
+	rm "$(evry location -move-cubers-io)"
 }

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+cubers_io_files() {
+	find "${XDG_DOWNLOAD_DIR:-$HOME/Downloads}/" -name '*twistytimer*' "$@"
+}
+
+# run this before exporting, so it doesnt move a partially downloaded
+# file from downloads, it'll back it up next time I run the script
+# (this is called in https://sean.fish/d/housekeeping?dark)
+evry 10 minutes -move-cubers-io && {
+	to_dir="$(backup_to 'cubing/cubers_io')"
+	cubers_io_files "$@"
+	cubers_io_files -exec mv -t "$to_dir" {} +
+}
