@@ -2,7 +2,10 @@
 
 set -o pipefail
 
-evry 1 day -cache-zsh-history && {
+dur='hour'
+[[ "${ON_OS:-$(on_machine)}" =~ ^android_* ]] && dur='week'
+
+evry 1 "$dur" -cache-zsh-history && {
 	printlog 'cache_zsh_history: updating zsh history cache...'
 	hpi query my.zsh.history -s --order-key dt --reverse | jq '.command' | unique | sponge "${HOME}/.cache/ctrl_r_zsh_history" || send-error 'couldnt update zsh history'
 }
