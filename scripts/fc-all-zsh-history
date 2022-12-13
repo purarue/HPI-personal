@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -o pipefail
+
+{
+	parse-zsh-history --reverse | jq '.command' | unique
+	cat "${HOME}/.cache/ctrl_r_zsh_history"
+} | unique

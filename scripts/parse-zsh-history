@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+from pathlib import Path
+from typing import Optional
+
+import click
+from my.zsh import _parse_file
+from my.core.serialize import dumps
+from more_itertools import always_reversible
+
+
+default: Path = Path(os.environ.get("ZDOTDIR", Path.home())) / ".zsh_history"
+
+
+@click.command()
+@click.option("--reverse/--no-reverse", required=False, is_flag=True, default=False)
+@click.argument(
+    "ZSH_HIST_FILE",
+    type=click.Path(exists=True, path_type=Path),
+    required=True,
+    default=default,
+)
+def main(reverse: bool, zsh_hist_file: Path) -> None:
+    """
+    Parses your current zsh history file as JSON
+    """
+    res = _parse_file(zsh_hist_file)
+    if reverse:
+        res = always_reversible(res)
+    for item in res:
+        sys.stdout.write(dumps(item))
+        sys.stdout.write("\n")
+    sys.stdout.flush()
+
+
+if __name__ == "__main__":
+    main()
