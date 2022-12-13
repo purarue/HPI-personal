@@ -1,8 +1,14 @@
-These are personal modules that I don't see anyone else using, and some of my personal scripts/jobs to save/backup data
+These are personal modules and some of my personal scripts/jobs to save/backup data
 
 - `my.old_forums`, parses random forum posts and achievements from sites I used to use in the past, see [`old_forums`](https://github.com/seanbreckenridge/old_forums)
 - `my.nextalbums`, grabbing when I listened to music albums/my ratings using my [giant spreadsheet](https://sean.fish/s/albums). Handled by [`nextalbums export`](https://github.com/seanbreckenridge/albums)
 - `my.location.where_db` acts as a sort of entrypoint to consume my location data -- lets me query where I was on a day, reverse geocode (using [Nominatim](https://nominatim.openstreetmap.org/ui/about.html)) lookup/query around a particular time
+
+Among the other custom scripts in [`scripts`](./scripts), includes:
+
+- `discord_download_attachments` - to download all of my discord attachments
+- `last_gps_location`, which quickly grabs my latest `gpslogger` gps location
+- a custom `fzf` `Ctrl+R` for my shell which searches all of `my.zsh.history`, see [related files](https://github.com/seanbreckenridge/HPI-personal/commit/4bba567a03e7c8610e7ed17a9fb4ce8db0a2faad)
 
 ## Installation
 
