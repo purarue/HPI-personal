@@ -3,7 +3,7 @@
 # but I use github pretty actively, so backing this up more often
 # this exports things like comments/issues/prs
 
-wait-for-internet -q --timeout 10 || exit 0
+wait-for-internet -q --timeout "${WFI_TIMEOUT:-10}" || exit 0
 
 evry 1 month -backup_stexport && {
 	BACKUP_DIR="$(backup_to 'stackexchange')"

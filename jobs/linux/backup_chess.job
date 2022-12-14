@@ -1,7 +1,7 @@
 #!/bin/bash
 # should never really expire, so just to track new games
 
-wait-for-internet -q --timeout 10 || exit 0
+wait-for-internet -q --timeout "${WFI_TIMEOUT:-10}" || exit 0
 
 # shellcheck disable=SC1091
 source "$HPIDATA/tokens" # source my lichess token
