@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 
-evry 4 hours -bleanser-phone && {
+evry 4 hours -bleanser-smscalls && {
 	sms_size="$(find ~/data/SMSBackups -iname '*sms*' -type f | wc -l)"
 	if ((sms_size < 5)); then
-		echo 'SMSBackups dir has less than 5 exports, exiting...' 1>&2
-		exit 0
+		echo 'SMSBackups dir has less than 5 exports, skipping...' 1>&2
+	else
+		bleanser-runall smscalls
 	fi
-	bleanser-runall bleanser_sean.modules.smscalls
 	rm -vrf ~/.cache/removed
 }
+
+evry 1 day -bleanser-zsh && bleanser-runall zsh
