@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-evry 1 day -bleanser-zsh && bleanser-runall -t size zsh
+evry 1 hour -bleanser-zsh && bleanser-runall -t size zsh
 
 evry 4 hours -bleanser-smscalls && {
 	sms_size="$(find ~/data/SMSBackups -iname '*sms*' -type f | wc -l)"
