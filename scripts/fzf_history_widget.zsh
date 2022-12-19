@@ -15,3 +15,7 @@ fzf-history-widget() {
 	zle reset-prompt
 	return $ret
 }
+zle     -N             fzf-cd-widget
+bindkey -M emacs '\ec' fzf-cd-widget
+bindkey -M vicmd '\ec' fzf-cd-widget
+bindkey -M viins '\ec' fzf-cd-widget
