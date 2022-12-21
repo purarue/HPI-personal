@@ -1,6 +1,10 @@
 # override the CTRL+R widget using my hpi zsh history
 # combines/merges (w/ a cache) zsh history from all my machines
 
+# this assumes you've already sourced the fzf key-bindings.zsh file
+# (e.g. at /usr/share/fzf/key-bindings.zsh)
+# See https://github.com/junegunn/fzf:
+
 fzf-history-widget() {
 	local selected num
 	setopt localoptions noglobsubst noposixbuiltins pipefail no_aliases 2>/dev/null

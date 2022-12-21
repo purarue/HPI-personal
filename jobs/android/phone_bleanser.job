@@ -11,4 +11,3 @@ evry 4 hours -bleanser-smscalls && {
 	fi
 	rm -vrf ~/.cache/removed
 }
-
