@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# if this is already cached it just reads
+# from ~/.cache/cachew and exits very fast, otherwise
+# it takes a few minutes to update the tz cache
+
+evry 5 minutes -refresh-tz-cache && {
+	# shellcheck disable=SC1091
+	printlog 'refresh-tz-cache: refreshing tz cache...'
+	flock ~/.local/tz-lock with-secrets hpi doctor -S my.time.tz.via_location
+}
