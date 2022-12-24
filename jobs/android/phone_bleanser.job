@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-evry 1 hour -bleanser-zsh && bleanser-runall -t size zsh
+evry 1 hour -bleanser-zsh && {
+	zsh_files="$(find ~/data/zsh_history -type f | wc -l)"
+	((zsh_files > 15)) && bleanser-runall -t size zsh
+}
 
 evry 4 hours -bleanser-smscalls && {
 	sms_size="$(find ~/data/SMSBackups -iname '*sms*' -type f | wc -l)"
