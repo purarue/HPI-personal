@@ -8,7 +8,8 @@ local data is over 90 days old
 """
 
 from time import time
-from typing import Optional, Iterator
+from pathlib import Path
+from typing import Optional, Iterator, List, TYPE_CHECKING, Callable
 from datetime import datetime, timedelta
 
 import click
@@ -26,6 +27,19 @@ def _twistytimer() -> Iterator[Solve]:
 
     latest = sorted(parsed_conf["twistytimer"], key=lambda pth: pth.stat().st_mtime)[-1]
     yield from merge_files([latest])
+
+
+if TYPE_CHECKING:
+    from my.activitywatch.active_window import Result
+
+
+def _aw_window_watcher() -> Iterator["Result"]:
+    from my.activitywatch.active_window import inputs, history
+
+    use: Callable[[], List[Path]] = lambda: [
+        p for p in inputs() if "aw-window/phone" in str(p)
+    ]
+    yield from history(from_paths=use)
 
 
 day = timedelta(days=1).total_seconds()
@@ -48,7 +62,8 @@ def main(_override: Optional[int]) -> None:
     for name, func, days in (
         ("Google Takeout", my.google.takeout.parser.events, 90),
         ("Discord Data Export", my.discord.data_export.messages, 150),
-        ("TwistyTimer", _twistytimer, 31),
+        ("TwistyTimer", _twistytimer, 28),
+        ("ActivityWatch Phone", _aw_window_watcher, 28),
     ):
         over_days = _override if _override is not None else days
         # function which when given an item returns the datetime
@@ -65,7 +80,7 @@ def main(_override: Optional[int]) -> None:
         maxval = max(filter(lambda o: attrfunc(o) is not None, itr), key=attrfunc)  # type: ignore
         # calculate diff with now
         mdt = attrfunc(maxval)
-        assert isinstance(mdt, datetime)
+        assert isinstance(mdt, datetime), f"{mdt} {type(mdt)} is not a datetime"
         days_since = (time() - mdt.timestamp()) / day
         lines.append([name, round(days_since, 3)])
         if days_since > over_days:
