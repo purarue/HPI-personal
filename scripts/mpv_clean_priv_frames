@@ -65,6 +65,11 @@ def clean_file(jf: Path) -> None:
         blobs = data["mapping"].values()
     for blob in blobs:
         for ts in list(blob):
+            if "playlist" in blob[ts]:
+                blob[ts].pop("playlist")
+            if blob[ts] == {}:
+                blob.pop(ts)
+                continue
             if metadata := blob[ts].get("metadata"):
                 if removed_keys := list(_priv_frames(metadata)):
                     for rk in removed_keys:
