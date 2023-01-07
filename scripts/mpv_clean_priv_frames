@@ -5,32 +5,52 @@ import typing as t
 from pathlib import Path
 
 import click
-from more_itertools import unique_everseen
+from more_itertools import unique_everseen, ilen
 from my.mpv.history_daemon import all_history, Media, inputs
 
-disallowed = (
+disallowed_exact = (
+    "log",
+    "ytdl_description",
+    "md5",
+    "comment",
+    "info",
+    "arcue",
+    "itunsmpb",
+    "buycdurl",
+    "cdtoc",
+    "encoding",
+    "unsyncedlyrics",
+    "itunes_cddb",
+    "acoustid fingerprint",
+    "notes",
+)
+
+disallowed_contains = (
     "id3v2_priv",
     "gracenote",
     "organization",
+    "streaming/otf/durations",
 )
 
 disallowed_startswith = ("lyrics",)
 
 
-def _has_priv_frames(metadata: dict[str, t.Any]) -> bool:
+def _priv_frames(metadata: dict[str, t.Any]) -> t.Iterator[str]:
     for k in metadata.keys():
         kl = k.lower()
-        for d in disallowed:
+        for d in disallowed_exact:
+            if d == kl:
+                yield k
+        for d in disallowed_contains:
             if d in kl:
-                return True
+                yield k
         for d in disallowed_startswith:
             if kl.startswith(d):
-                return True
-    return False
+                yield k
 
 
 def list_broken(mpv: Media) -> t.Iterator[str]:
-    if _has_priv_frames(mpv.metadata):
+    if ilen(_priv_frames(mpv.metadata)) > 0:
         yield mpv.path
 
 
@@ -45,20 +65,10 @@ def clean_file(jf: Path) -> None:
         blobs = data["mapping"].values()
     for blob in blobs:
         for ts in list(blob):
-            event_data = blob[ts]
-            if metadata := event_data.get("metadata"):
-                if _has_priv_frames(metadata):
-                    removed_keys = []
-                    for k in list(metadata):
-                        kl = k.lower()
-                        for d in disallowed:
-                            if d in kl:
-                                metadata.pop(k)
-                                removed_keys.append(k)
-                        for d in disallowed_startswith:
-                            if kl.startswith(d):
-                                metadata.pop(k)
-                                removed_keys.append(k)
+            if metadata := blob[ts].get("metadata"):
+                if removed_keys := list(_priv_frames(metadata)):
+                    for rk in removed_keys:
+                        metadata.pop(rk)
                     print(f"Removed {removed_keys}, fixed {metadata}")
     jf.write_text(json.dumps(data))
 
