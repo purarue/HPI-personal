@@ -66,8 +66,7 @@ def clean_file(jf: Path) -> None:
     for blob in blobs:
         for ts in list(blob):
             if "playlist" in blob[ts]:
-                blob[ts].pop("playlist")
-            if blob[ts] == {}:
+                print(f"Removing {ts} {blob[ts]}")
                 blob.pop(ts)
                 continue
             if metadata := blob[ts].get("metadata"):
