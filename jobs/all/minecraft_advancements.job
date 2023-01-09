@@ -8,4 +8,5 @@ evry 1 hour -minecraft_advancements && {
 	BACKUP_TO="$(backup_to minecraft_advancements)/$(on_machine)"
 	printlog "minecraft_advancements:Backing up minecraft advancements to '${BACKUP_TO}'..."
 	backup_minecraft_advancements -o "${BACKUP_TO}"
+	fd --full-path --glob "$(backup_to minecraft_advancements)/**/*.json" -X json-compress
 }
