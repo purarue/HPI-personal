@@ -34,4 +34,4 @@ def main(output_dir: str, minecraft_dir: str | None) -> None:
 
 
 if __name__ == "__main__":
-    main(prog_name="backup_minecraft_advancements")
+    main()

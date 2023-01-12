@@ -70,7 +70,7 @@ wq() {
 	_wq "$*"
 }
 
-alias wq-now='_wq --use-location "$(last_gps_location)" now'
+alias wq-now='_wq --use-location "$(last-gps-location)" now'
 
 # https://github.com/seanbreckenridge/mapscii-at
 wq-mapscii() {

@@ -4,14 +4,14 @@
 # otherwise, does both
 
 main() {
-	local export history noflags
-	export=''
+	local rexport history noflags
+	rexport=''
 	history=''
 	noflags=''
 	while getopts eh opt; do
 		case "$opt" in
 		e)
-			export=1
+			rexport=1
 			;;
 		h)
 			history=1
@@ -20,8 +20,8 @@ main() {
 		esac
 	done
 	shift "$((OPTIND - 1))"
-	[[ -z "$export" && -z "$history" ]] && noflags=1
-	if [[ -n "$export" || -n "$noflags" ]]; then
+	[[ -z "$rexport" && -z "$history" ]] && noflags=1
+	if [[ -n "$rexport" || -n "$noflags" ]]; then
 		echo 'Running export...' >&2
 		malexport update export -u "$MAL_USERNAME" || return $?
 	fi

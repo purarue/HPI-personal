@@ -3,7 +3,7 @@
 
 evry 1 day -backup_bash && {
 	BASH_HISTORY="${HOME}/.bash_history"
-	is_hpi_bash_format "${BASH_HISTORY}" || exit 0
+	is-hpi-bash-format "${BASH_HISTORY}" || exit 0
 	printlog "backup_bash:Backing up local bash history..."
 	arctee "$(backup_to bash)/$(on_machine)-$(tstamp)" -- cat "${BASH_HISTORY}"
 }

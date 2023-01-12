@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 import click
+import more_itertools
 
 from my.bash import _parse_file
 
@@ -15,8 +16,7 @@ def main(file: Path) -> None:
     If my bash history couldn't be parsed by my HPI module, exit unsuccessfully
     Used to make sure the bash history is using the correct format before backing it up
     """
-    res = list(_parse_file(file))
-    if len(res) == 0:
+    if more_itertools.ilen(_parse_file(file)) == 0:
         sys.exit(1)
 
 

@@ -6,8 +6,8 @@ These are personal modules and some of my personal scripts/jobs to save/backup d
 
 Among the other custom scripts in [`scripts`](./scripts), includes:
 
-- `discord_download_attachments` - to download all of my discord attachments
-- `last_gps_location`, which quickly grabs my latest `gpslogger` gps location
+- `discord-download-attachments` - to download all of my discord attachments
+- `last-gps-location`, which quickly grabs my latest `gpslogger` gps location
 - a custom `fzf` `Ctrl+R` for my shell which searches all of `my.zsh.history`, see [related files](https://github.com/seanbreckenridge/HPI-personal/commit/4bba567a03e7c8610e7ed17a9fb4ce8db0a2faad)
 
 ## Installation

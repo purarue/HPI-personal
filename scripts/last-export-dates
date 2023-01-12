@@ -82,7 +82,7 @@ def main(_override: Optional[int]) -> None:
         mdt = attrfunc(maxval)
         assert isinstance(mdt, datetime), f"{mdt} {type(mdt)} is not a datetime"
         days_since = (time() - mdt.timestamp()) / day
-        lines.append([name, round(days_since, 3)])
+        lines.append([name, f"{str(round(days_since, 2)).ljust(5)} / {days}"])
         if days_since > over_days:
             msg = f"{name} exported over {over_days} days ago"
             click.echo(msg)

@@ -90,14 +90,14 @@ def main(cmd: str) -> None:
 
     Should list, to check if there are any new tracked private tags:
 
-    mpv_clean_priv_frames list
+    mpv-clean-priv-frames list
 
     Then remove them with a command like:
 
     \b
-    mpv_clean_priv_frames list | sort -u | exists | tr '\\n' '\\0' | xargs -0 -I {} eyeD3 --remove-frame PRIV --user-text-frame 'GracenoteExtData:' --user-text-frame 'GracenoteFileID:' --user-text-frame 'ORGANIZATION:' --user-text-frame "GRACENOTEFILEID:" --user-text-frame "GRACENOTEEXTDATA:" "{}"
+    mpv-clean-priv-frames list | sort -u | exists | tr '\\n' '\\0' | xargs -0 -I {} eyeD3 --remove-frame PRIV --user-text-frame 'GracenoteExtData:' --user-text-frame 'GracenoteFileID:' --user-text-frame 'ORGANIZATION:' --user-text-frame "GRACENOTEFILEID:" --user-text-frame "GRACENOTEEXTDATA:" "{}"
 
-    And then run 'mpv_clean_priv_frames clean' to remove the metadata keys from my mpv data files
+    And then run 'mpv-clean-priv-frames clean' to remove the metadata keys from my mpv data files
     """
 
     if cmd == "clean":
