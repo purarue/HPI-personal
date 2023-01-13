@@ -74,7 +74,14 @@ def sort_and_display(
 
 @click.command()
 @click.option("-u", "--mal-username", envvar="MAL_USERNAME", required=True)
-@click.option("-S", "--status", default="On-Hold", show_default=True, required=True)
+@click.option(
+    "-S",
+    "--status",
+    default="On-Hold",
+    type=click.Choice(["Completed", "Dropped", "Plan to Watch", "Watching", "On-Hold"]),
+    show_default=True,
+    required=True,
+)
 @click.option(
     "-s",
     "--sort-by",
