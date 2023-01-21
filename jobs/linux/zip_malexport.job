@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# backup from $HPIDATA/malexport to $XDG_DOCUMENTS_DIR/Backups/malexport
+# this is done to save my current entries every 2 months since
+# MAL deletes entries all the time
+
+set -o pipefail
+
+evry 2 months -zip_malexport && {
+	from_dir="${HPIDATA}/malexport"
+	[[ -e "$from_dir" ]] || {
+		send-error "ERROR: $from_dir does not exist"
+		exit 1
+	}
+	to_dir="${XDG_DOCUMENTS_DIR}/Backups/malexport"
+	[[ -e "$to_dir" ]] || {
+		send-error "ERROR: $to_dir does not exist"
+		exit 1
+	}
+	target="${to_dir}/$(date +%Y-%m-%d).zip"
+	[[ -e "$target" ]] && rm -f "$target"
+	zip -r "$target" "$from_dir" && {
+		printlog "zip_malexport: created $target"
+	} || {
+		send-error "ERROR: Failed to create $target"
+		exit 1
+	}
+}
