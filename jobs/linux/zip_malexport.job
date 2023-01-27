@@ -6,23 +6,4 @@
 
 set -o pipefail
 
-evry 2 months -zip_malexport && {
-	from_dir="${HPIDATA}/malexport"
-	[[ -e "$from_dir" ]] || {
-		send-error "ERROR: $from_dir does not exist"
-		exit 1
-	}
-	to_dir="${XDG_DOCUMENTS_DIR}/Backups/malexport"
-	[[ -e "$to_dir" ]] || {
-		send-error "ERROR: $to_dir does not exist"
-		exit 1
-	}
-	target="${to_dir}/$(date +%Y-%m-%d).zip"
-	[[ -e "$target" ]] && rm -f "$target"
-	zip -r "$target" "$from_dir" && {
-		printlog "zip_malexport: created $target"
-	} || {
-		send-error "ERROR: Failed to create $target"
-		exit 1
-	}
-}
+evry 1 week -zip_malexport && with-secrets fd . "$HPIDATA/malexport" --max-depth=1 -x malexport recover-deleted backup -u "{/}"
