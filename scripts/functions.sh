@@ -36,22 +36,8 @@ albums-next() {
 }
 alias albums-history-desc='albums-history -s | albums-describe-score'
 alias albums-to-listen-desc='albums-next'
-# albums-history -s | albums-filter-reason 'Grammy for Best Rock' | albums-describe-score
-# albums-to-listen -s | albums-filter-reason 'Contemporary Blues' | albums-describe
-albums-filter-reason() {
-	local reason
-	reason="${1:?provide reason to filter by as first argument}"
-	jq "select(.reasons | .[] | contains(\"${reason}\"))"
-}
-albums-filter-genre() {
-	local genre
-	genre="${1:?provide genre or style to filter by as first argument}"
-	# lower what the user gave, as well as the genres/styles so can compare
-	genre="$(echo "${genre}" | tr '[:upper:]' '[:lower:]')"
-	jq "select((.genres + .styles) | .[] |= ascii_downcase | .[] | contains(\"${genre}\"))"
-}
 
-alias albums-recommended='albums-to-listen -s | albums-filter-reason Recommendation'
+alias albums-recommended='hpi query my.nextalbums.reason_recommendation -s'
 alias albums-recommended-desc='albums-recommended | albums-describe'
 
 ########################
