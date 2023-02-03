@@ -37,9 +37,6 @@ albums-next() {
 alias albums-history-desc='albums-history -s | albums-describe-score'
 alias albums-to-listen-desc='albums-next'
 
-alias albums-recommended='hpi query my.nextalbums.reason_recommendation -s'
-alias albums-recommended-desc='albums-recommended | albums-describe'
-
 ########################
 # my.location.where_db
 ########################
