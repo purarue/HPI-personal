@@ -18,7 +18,7 @@ locate_screenshots() {
 	fi
 }
 
-evry 1 day -runelite_screenshots && {
+evry 1 hour -runelite_screenshots && {
 	BACKUP_TO="$(backup_to runelite_screenshots)"
 	if BACKUP_FROM="$(locate_screenshots)"; then
 		rsync -Pavh "${BACKUP_FROM}"/* "${BACKUP_TO}"
