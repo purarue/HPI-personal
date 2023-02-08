@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # are complete exports, so just to track new listens
 
 wait-for-internet -q --timeout "${WFI_TIMEOUT:-10}" || exit 0

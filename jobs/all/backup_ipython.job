@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # backup current main and calculator profiles for ipython databases
 
 evry 2 days -backup_ipython && {

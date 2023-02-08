@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # expires at a rate of 300 events or 90 days
 # but I use github pretty actively, so backing this up more often
 # this exports things like comments/issues/prs

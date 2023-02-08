@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # should never really expire, so just to track new games
 
 wait-for-internet -q --timeout "${WFI_TIMEOUT:-10}" || exit 0

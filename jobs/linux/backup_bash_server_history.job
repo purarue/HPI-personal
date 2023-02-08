@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # backup bash history from servers I commonly use
 
 wait-for-internet -q --timeout "${WFI_TIMEOUT:-10}" || exit 0

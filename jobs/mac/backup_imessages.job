@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # backup current messages (imessage) database
 
 evry 1 week -backup_imessages && {

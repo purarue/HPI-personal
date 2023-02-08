@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Export https://github.com/tcgoetz/GarminDB every so often
 
 wait-for-internet -q --timeout "${WFI_TIMEOUT:-10}" || exit 0

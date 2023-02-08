@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # backup my zsh history
 
 evry 15 minutes -backup_zsh_history && {

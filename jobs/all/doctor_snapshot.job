@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # create a snapshot of the current data
 
 # dont run on android
