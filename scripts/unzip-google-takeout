@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 declare -a TAKEOUT_ZIPS=()
 declare GOOGLE_DRIVE_TAKEOUT_DIR
