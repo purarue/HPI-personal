@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
 evry 1 hour -bleanser-runall && {
+	printlog 'remove-broken-sms-files: removing broken sms files...'
+	remove-broken-sms-files || {
+		send-error 'couldnt remove broken sms files'
+		exit 0
+	}
 	printlog 'bleanser-runall:running bleanser...'
 	# pipe through cat to remove term colors
 	bleanser-runall 2>&1 | cat >/tmp/bleanser.log

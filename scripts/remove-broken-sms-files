@@ -2,6 +2,8 @@
 # seems to be a bug with the sms backup & restore app
 # creates partially written xml files, perhpas when the app is killed??
 
+import os
+
 import click
 from logzero import logger
 from my.smscalls import config, get_files, etree
@@ -9,14 +11,14 @@ from my.smscalls import config, get_files, etree
 
 def main() -> None:
     for xml_file in get_files(config.export_path, glob="*.xml"):
+        assert "SMSBackups" in str(xml_file), f"Unexpected file: {xml_file}"
         try:
             etree.parse(xml_file)
         except etree.XMLSyntaxError as e:
             logger.error(f"Error parsing {xml_file}: {e}", exc_info=True)
-            print(f"Removing {xml_file}")
-            if click.confirm("Remove file?", default=True):
-                xml_file.unlink()
-    click.secho("remove-broken-sms-files: done", fg="green")
+            print(f"Removing {xml_file}", err=True)
+            xml_file.unlink()
+    click.echo(f"{os.path.basename(__file__)}: {click.style('done', fg='green')}")
 
 
 if __name__ == "__main__":
