@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # backup from $HPIDATA/malexport to $XDG_DOCUMENTS_DIR/Backups/malexport
-# this is done to save my current entries every 2 months since
+# this is done to save my current entries every 1 week since
 # MAL deletes entries all the time
 
 set -o pipefail
