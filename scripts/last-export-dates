@@ -7,39 +7,66 @@ download, this reminds me to do it when my newest
 local data is over 90 days old
 """
 
+from __future__ import annotations
 from time import time
 from pathlib import Path
-from typing import Optional, Iterator, List, TYPE_CHECKING, Callable
+from typing import (
+    Optional,
+    Iterator,
+    List,
+    TYPE_CHECKING,
+    Callable,
+    NamedTuple,
+    Iterable,
+)
 from datetime import datetime, timedelta
 
 import click
 import my.google.takeout.parser
 import my.discord.data_export
-from scramble_history.twistytimer import merge_files, Solve
 from my.core.query import attribute_func
 from my.core.query_range import select_range
 from tabulate import tabulate
 from seanb.notify import notify
 
 
-def _twistytimer() -> Iterator[Solve]:
-    from my.scramble.history import parsed_conf
-
-    latest = sorted(parsed_conf["twistytimer"], key=lambda pth: pth.stat().st_mtime)[-1]
-    yield from merge_files([latest])
-
-
 if TYPE_CHECKING:
     from my.activitywatch.active_window import Result
 
 
-def _aw_window_watcher() -> Iterator["Result"]:
+def _aw_window_watcher() -> Iterator[Result]:
     from my.activitywatch.active_window import inputs, history
 
     use: Callable[[], List[Path]] = lambda: [
         p for p in inputs() if "aw-window/phone" in str(p)
     ]
     yield from history(from_paths=use)
+
+
+class FileResult(NamedTuple):
+    """
+    When a file was created/last modified as the export time
+    """
+
+    path: Path
+    mtime: datetime
+
+    @classmethod
+    def from_paths(cls, paths: Iterable[Path]) -> Iterator[FileResult]:
+        for p in sorted(list(paths)):
+            yield cls(p, datetime.fromtimestamp(p.stat().st_mtime))
+
+
+def _twistytimer() -> Iterator[FileResult]:
+    from my.scramble.history import parsed_conf
+
+    yield from FileResult.from_paths(parsed_conf["twistytimer"])
+
+
+def _last_sms_export() -> Iterator[FileResult]:
+    from my.smscalls import config, get_files
+
+    yield from FileResult.from_paths(get_files(config.export_path, glob="sms-*.xml"))
 
 
 day = timedelta(days=1).total_seconds()
@@ -64,6 +91,7 @@ def main(_override: Optional[int]) -> None:
         ("Discord Data Export", my.discord.data_export.messages, 150),
         ("TwistyTimer", _twistytimer, 28),
         ("ActivityWatch Phone", _aw_window_watcher, 28),
+        ("SMS Export", _last_sms_export, 14),
     ):
         over_days = _override if _override is not None else days
         # function which when given an item returns the datetime
