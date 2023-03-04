@@ -10,8 +10,10 @@ local data is over 90 days old
 from __future__ import annotations
 from time import time
 from pathlib import Path
+from functools import cached_property
 from typing import (
-    Optional,
+    cast,
+    Any,
     Iterator,
     List,
     TYPE_CHECKING,
@@ -19,6 +21,7 @@ from typing import (
     NamedTuple,
     Iterable,
 )
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 import click
@@ -69,7 +72,68 @@ def _last_sms_export() -> Iterator[FileResult]:
     yield from FileResult.from_paths(get_files(config.export_path, glob="sms-*.xml"))
 
 
-day = timedelta(days=1).total_seconds()
+DAY = timedelta(days=1).total_seconds()
+
+
+def _notify_over_days(name: str, over_days: int) -> None:
+    msg = f"{name} exported over {over_days} days ago"
+    click.echo(msg)
+    notify(
+        msg,
+        title="last-export-dates",
+    )
+
+
+AttrFunc = Callable[[Any], datetime]
+
+
+@dataclass
+class Export:
+    name: str
+    func: Callable[[], Iterator[Any]]
+    over_days: int = 28  # if data is older than this, notify
+
+    @cached_property
+    def days_since_export(self) -> float:
+        # function which when given an item returns the datetime
+        attrfunc: AttrFunc = cast(
+            AttrFunc,
+            attribute_func(
+                next(filter(lambda o: o is not None, self.func())),
+                where=lambda o: isinstance(o, datetime),
+            ),
+        )
+        assert callable(attrfunc), f"attrfunc must be callable {attrfunc}"
+
+        # sort function results by datetime, drop anything that cant be sorted
+        itr = select_range(
+            self.func(), order_by_value_type=datetime, drop_unsorted=True
+        )
+
+        # filter out any none values
+        some = filter(lambda o: attrfunc(o) is not None, itr)
+        # attrfunc(o) will return the datetime, get the most recent
+        most_recent_dt: datetime = attrfunc(max(some, key=attrfunc))
+        # calculate diff with the most recent datetime with now
+        return (time() - most_recent_dt.timestamp()) / DAY
+
+    def time_description(self, days_since: float) -> str:
+        return f"{str(round(days_since, 2)).ljust(5)} / {self.over_days}"
+
+    def process(self, override_days: int | None) -> List[str]:
+        over_days = override_days or self.over_days
+        if self.days_since_export > over_days:
+            _notify_over_days(self.name, over_days)
+        return [self.name, self.time_description(self.days_since_export)]
+
+
+EXPORTS: List[Export] = [
+    Export("TwistyTimer", _twistytimer),
+    Export("ActivityWatch Phone", _aw_window_watcher),
+    Export("SMS Export", _last_sms_export, over_days=14),
+    Export("Discord Data Export", my.discord.data_export.messages, over_days=150),
+    Export("Google Takeout", my.google.takeout.parser.events, over_days=90),
+]
 
 
 @click.command(help=__doc__, context_settings={"max_content_width": 100})
@@ -81,47 +145,13 @@ day = timedelta(days=1).total_seconds()
     default=None,
     help="If over this many days, notify/warn",
 )
-def main(_override: Optional[int]) -> None:
+def main(_override: int | None) -> None:
     """
     Warn me to do exports I do manually, periodicaly
     """
-    lines = []
-    for name, func, days in (
-        ("Google Takeout", my.google.takeout.parser.events, 90),
-        ("Discord Data Export", my.discord.data_export.messages, 150),
-        ("TwistyTimer", _twistytimer, 28),
-        ("ActivityWatch Phone", _aw_window_watcher, 28),
-        ("SMS Export", _last_sms_export, 14),
-    ):
-        over_days = _override if _override is not None else days
-        # function which when given an item returns the datetime
-        attrfunc = attribute_func(
-            next(filter(lambda o: o is not None, func())),
-            where=lambda o: isinstance(o, datetime),
-        )
-        assert attrfunc is not None
-
-        # sort function results by datetime, drop anything that cant be sorted
-        itr = select_range(func(), order_by_value_type=datetime, drop_unsorted=True)
-        # remove nones, attrfunc(o) will return the datetime
-        # and then we can extract the largest
-        maxval = max(filter(lambda o: attrfunc(o) is not None, itr), key=attrfunc)  # type: ignore
-        # calculate diff with now
-        mdt = attrfunc(maxval)
-        assert isinstance(mdt, datetime), f"{mdt} {type(mdt)} is not a datetime"
-        days_since = (time() - mdt.timestamp()) / day
-        lines.append([name, f"{str(round(days_since, 2)).ljust(5)} / {days}"])
-        if days_since > over_days:
-            msg = f"{name} exported over {over_days} days ago"
-            click.echo(msg)
-            notify(
-                msg,
-                title="last-export-dates",
-            )
-
-    print(
+    click.echo(
         tabulate(
-            lines,
+            list(map(lambda exp: exp.process(_override), EXPORTS)),
             headers=(
                 "Export",
                 "Days Since",

@@ -16,7 +16,7 @@ def main() -> None:
             etree.parse(xml_file)
         except etree.XMLSyntaxError as e:
             logger.error(f"Error parsing {xml_file}: {e}", exc_info=True)
-            print(f"Removing {xml_file}", err=True)
+            click.echo(f"Removing {xml_file}", err=True)
             xml_file.unlink()
     click.echo(f"{os.path.basename(__file__)}: {click.style('done', fg='green')}")
 
