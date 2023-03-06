@@ -58,7 +58,6 @@ def main(discord_attachments_dir: Path) -> None:
         target = url_filename(discord_attachments_dir, urlparts[1:])
 
         if not target.exists():
-
             # request url
             click.echo(
                 f"[{click.style(i + 1, 'green')}/{click.style(len(urls), (167, 124, 252))}] Requesting {url}",

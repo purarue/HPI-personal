@@ -240,7 +240,6 @@ def _db() -> Optional[Path]:
 
 
 def locations(db_location: Optional[Path] = None) -> Iterator[ModelRaw]:
-
     if db_location is None:
         db_location = _db()
     if db_location is None:

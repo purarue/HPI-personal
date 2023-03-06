@@ -28,6 +28,7 @@ def _ips() -> Iterator[IP]:
     yield from discord.ips()
     yield from blizzard.ips()
 
+
 def ips() -> Iterator[IP]:
     yield from deny.filter(_ips())
 
