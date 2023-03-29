@@ -16,7 +16,6 @@ from typing import (
     Any,
     Iterator,
     List,
-    TYPE_CHECKING,
     Callable,
     NamedTuple,
     Iterable,
@@ -27,23 +26,14 @@ from datetime import datetime, timedelta
 import click
 import my.google.takeout.parser
 import my.discord.data_export
+from my import smscalls
+from my.activitywatch import active_window
+from my.core import get_files
+from my.scramble.history import parsed_conf
 from my.core.query import attribute_func
 from my.core.query_range import select_range
 from tabulate import tabulate
 from seanb.notify import notify
-
-
-if TYPE_CHECKING:
-    from my.activitywatch.active_window import Result
-
-
-def _aw_window_watcher() -> Iterator[Result]:
-    from my.activitywatch.active_window import inputs, history
-
-    use: Callable[[], List[Path]] = lambda: [
-        p for p in inputs() if "aw-window/phone" in str(p)
-    ]
-    yield from history(from_paths=use)
 
 
 class FileResult(NamedTuple):
@@ -58,21 +48,6 @@ class FileResult(NamedTuple):
     def from_paths(cls, paths: Iterable[Path]) -> Iterator[FileResult]:
         for p in sorted(list(paths)):
             yield cls(p, datetime.fromtimestamp(p.stat().st_mtime))
-
-
-def _twistytimer() -> Iterator[FileResult]:
-    from my.scramble.history import parsed_conf
-
-    yield from FileResult.from_paths(parsed_conf["twistytimer"])
-
-
-def _last_sms_export() -> Iterator[FileResult]:
-    from my.smscalls import config, get_files
-
-    yield from FileResult.from_paths(get_files(config.export_path, glob="sms-*.xml"))
-
-
-DAY = timedelta(days=1).total_seconds()
 
 
 def _notify_over_days(name: str, over_days: int) -> None:
@@ -90,8 +65,23 @@ AttrFunc = Callable[[Any], datetime]
 @dataclass
 class Export:
     name: str
-    func: Callable[[], Iterator[Any]]
+    func: Callable[[], Iterator[Any]] | Iterator[Any]
     over_days: int = 28  # if data is older than this, notify
+
+    @property
+    def wfunc(self) -> Callable[[], Iterator[Any]]:
+        if callable(self.func):
+            return self.func
+        else:
+            assert isinstance(
+                self.func, Iterator
+            ), f"func must be callable or iterator {self.func}"
+
+            def _func() -> Iterator[Any]:
+                for o in self.func:
+                    yield o
+
+            return _func
 
     @cached_property
     def days_since_export(self) -> float:
@@ -99,7 +89,7 @@ class Export:
         attrfunc: AttrFunc = cast(
             AttrFunc,
             attribute_func(
-                next(filter(lambda o: o is not None, self.func())),
+                next(filter(lambda o: o is not None, self.wfunc())),
                 where=lambda o: isinstance(o, datetime),
             ),
         )
@@ -107,7 +97,7 @@ class Export:
 
         # sort function results by datetime, drop anything that cant be sorted
         itr = select_range(
-            self.func(), order_by_value_type=datetime, drop_unsorted=True
+            self.wfunc(), order_by_value_type=datetime, drop_unsorted=True
         )
 
         # filter out any none values
@@ -115,7 +105,7 @@ class Export:
         # attrfunc(o) will return the datetime, get the most recent
         most_recent_dt: datetime = attrfunc(max(some, key=attrfunc))
         # calculate diff with the most recent datetime with now
-        return (time() - most_recent_dt.timestamp()) / DAY
+        return (time() - most_recent_dt.timestamp()) / timedelta(days=1).total_seconds()
 
     def time_description(self, days_since: float) -> str:
         return f"{str(round(days_since, 2)).ljust(5)} / {self.over_days}"
@@ -128,9 +118,20 @@ class Export:
 
 
 EXPORTS: List[Export] = [
-    Export("TwistyTimer", _twistytimer),
-    Export("ActivityWatch Phone", _aw_window_watcher),
-    Export("SMS Export", _last_sms_export, over_days=14),
+    Export("TwistyTimer", FileResult.from_paths(parsed_conf["twistytimer"])),
+    Export(
+        "ActivityWatch Phone",
+        active_window.history(
+            from_paths=lambda: [
+                p for p in active_window.inputs() if "aw-window/phone" in str(p)
+            ]
+        ),
+    ),
+    Export(
+        "SMS Export",
+        FileResult.from_paths(get_files(smscalls.config.export_path, glob="sms-*.xml")),
+        over_days=14,
+    ),
     Export("Discord Data Export", my.discord.data_export.messages, over_days=150),
     Export("Google Takeout", my.google.takeout.parser.events, over_days=90),
 ]

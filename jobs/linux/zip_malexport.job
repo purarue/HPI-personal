@@ -6,4 +6,4 @@
 
 set -o pipefail
 
-evry 1 week -zip_malexport && with-secrets fd . "$HPIDATA/malexport" --max-depth=1 -x malexport recover-deleted backup -u "{/}"
+evry 3 days -zip_malexport && with-secrets fd . "$HPIDATA/malexport" --max-depth=1 -x malexport recover-deleted backup -u "{/}"
