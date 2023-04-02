@@ -5,6 +5,6 @@ wait-for-internet -q --timeout "${WFI_TIMEOUT:-10}" || exit 0
 evry 2 hours -backup_albums && {
 	printlog "albums:Running nextalbums export..."
 	# arctee doesnt overwrite if this fails, dont save incremental backups, just the current data
-	arctee -r 3 "${HPIDATA}/albums.json" -- python3 -m nextalbums export --raise-errors || send-error 'nextalbums: export failed'
+	arctee -r 3 "${HPIDATA}/albums.json" -- with-secrets python3 -m nextalbums export --raise-errors || send-error 'nextalbums: export failed'
 	json-compress "${HPIDATA}/albums.json"
 }
