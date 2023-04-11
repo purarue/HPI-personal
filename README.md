@@ -4,6 +4,13 @@ These are personal modules and some of my personal scripts/jobs to save/backup d
 - `my.nextalbums`, grabbing when I listened to music albums/my ratings using my [giant spreadsheet](https://sean.fish/s/albums). Handled by [`nextalbums export`](https://github.com/seanbreckenridge/albums)
 - `my.location.where_db` acts as a sort of entrypoint to consume my location data -- lets me query where I was on a day, reverse geocode (using [Nominatim](https://nominatim.openstreetmap.org/ui/about.html)) lookup/query around a particular time
 
+The most important parts of this are the `all.py` files, which override the default `all.py` in `HPI` to use my data sources:
+
+- [`my.location.all`](./my/location/all.py) - my location data
+- [`my.ip.all`](./my/ip/all.py) - my ip data
+
+For more info on those, see [docs](https://github.com/karlicoss/HPI/blob/master/doc/MODULE_DESIGN.org#allpy)
+
 Among the other custom scripts in [`scripts`](./scripts), includes:
 
 - `discord-download-attachments` - to download all of my discord attachments

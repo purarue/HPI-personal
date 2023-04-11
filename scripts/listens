@@ -4,20 +4,23 @@
 Print merged listens with a local datetime, using https://github.com/seanbreckenridge/my_feed
 """
 
-import json
+import sys
+import contextlib
 from datetime import datetime
-from typing import Iterator
+from typing import Iterator, cast
 
 import click
+from seanb.jsonfast import dumps
 from my.core.query_range import select_range, RangeTuple
 from my_feed.sources.model import FeedItem
-from my_feed.sources import mpv, listens, facebook_spotify_listens
+from my_feed.transform import transform
+from my_feed.sources import listens, mpv, facebook_spotify_listens
 
 
 def sources() -> Iterator[FeedItem]:
-    yield from mpv.history()
-    yield from listens.history()
-    yield from facebook_spotify_listens.history()
+    yield from transform(listens.history)()
+    yield from transform(mpv.history)()
+    yield from transform(facebook_spotify_listens.history)()
 
 
 @click.command(help=__doc__)
@@ -28,30 +31,44 @@ def sources() -> Iterator[FeedItem]:
     help="only list items within this range",
 )
 @click.option(
-    "-d",
+    "-d/-j",
     "--desc/--json",
     is_flag=True,
+    default=True,
     help="Print single line description instead of JSON",
 )
 def main(recent: str | None, desc: bool) -> None:
-    for ll in select_range(
-        sources(),  # type: ignore
-        order_by_value_type=datetime,
-        unparsed_range=RangeTuple(before="now", within=recent, after=None),
-        drop_exceptions=True,
-    ):
-        assert isinstance(ll, FeedItem)
-        d = {
-            "when": str(datetime.fromtimestamp(int(ll.when.timestamp()))),
-            "title": ll.title,
-            "artist": ll.creator,
-            "album": ll.subtitle,
-        }
+    feeditems: Iterator[FeedItem] = sources()
+    # only sort if we're filtering to recent items
+    if recent:
+        feeditems = cast(
+            Iterator[FeedItem],
+            select_range(
+                feeditems,
+                order_by_value_type=datetime,
+                unparsed_range=RangeTuple(before="now", within=recent, after=None),
+                drop_exceptions=True,
+            ),
+        )
+    for ll in feeditems:
+        when = str(datetime.fromtimestamp(int(ll.when.timestamp())))
         if desc:
-            print(f"{d['when']} | {d['title']} | {d['artist']} | {d['album']}")
+            sys.stdout.write(f"{when} | {ll.title} | {ll.creator} | {ll.subtitle}\n")
         else:
-            print(json.dumps(d))
+            sys.stdout.write(
+                dumps(
+                    {
+                        "when": when,
+                        "title": ll.title,
+                        "artist": ll.creator,
+                        "album": ll.subtitle,
+                    }
+                )
+            )
+            sys.stdout.write("\n")
 
 
 if __name__ == "__main__":
-    main()
+    with contextlib.suppress(KeyboardInterrupt):
+        main()
+    sys.stdout.flush()
