@@ -8,7 +8,7 @@ from my.core import Stats, LazyLogger
 
 from my.location import apple  # additional source
 from my.location import google_takeout, gpslogger, google_takeout_semantic
-from my.util.iter import warn_exceptions
+from my.core.error import warn_exceptions
 
 from my.location.common import Location
 
