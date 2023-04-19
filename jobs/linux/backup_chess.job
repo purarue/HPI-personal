@@ -18,5 +18,4 @@ chess_backup() {
 	json-compress "${BACKUP_DIR}/"*.json
 }
 
-evry 1 week -backup_chess && chess_backup '_{utcnow}'  # save to a timestamped file, in case
-evry 1 day -backup_chess_daily && chess_backup '_live' # save to '_live.json', updated each day
+evry 1 week -backup_chess && chess_backup '_{utcnow}'
