@@ -3,6 +3,6 @@
 evry 5 minutes -backup_git_doc_history && {
 	for backup in eva frinkconv mysql newsboat node plaintext_playlist ranger todo; do
 		printlog "git_doc_history: backing up $backup"
-		git_doc_history "$backup"
+		git_doc_history "$backup" >>/tmp/git_doc_history.log 2>&1
 	done
 }

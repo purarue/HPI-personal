@@ -2,7 +2,7 @@
 
 set -o pipefail
 
-dur='hour'
+dur='day'
 [[ "${ON_OS:-$(on_machine)}" =~ ^android_* ]] && dur='week'
 
 evry 1 "$dur" -cache-zsh-history && {

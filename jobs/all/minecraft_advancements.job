@@ -4,9 +4,15 @@
 ON_OS="${ON_OS:=$(on_machine)}"
 [[ "$ON_OS" =~ ^android.* ]] && exit 0
 
-evry 1 hour -minecraft_advancements && {
+[[ -z "$HPIDATA" ]] && {
+	send-error "HPIDATA is not set"
+	return 1
+}
+
+evry 1 week -minecraft_advancements && {
 	BACKUP_TO="$(backup_to minecraft_advancements)/$(on_machine)"
 	printlog "minecraft_advancements:Backing up minecraft advancements to '${BACKUP_TO}'..."
 	backup-minecraft-advancements -o "${BACKUP_TO}"
+	cd "$HPIDATA" || exit 1
 	fd --full-path --glob "$(backup_to minecraft_advancements)/**/*.json" -X json-compress
 }
