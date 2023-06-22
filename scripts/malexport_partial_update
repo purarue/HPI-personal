@@ -4,7 +4,6 @@ import os
 import click
 
 
-
 @click.command()
 @click.option(
     "-u",
@@ -43,7 +42,9 @@ def main(
 
     if history or not (export or history):
         click.echo("Updating history...", err=True)
-        account.update_history(count=history_count, only=ListType.ANIME, use_merged_file=True)
+        account.update_history(
+            count=history_count, only=ListType.ANIME, use_merged_file=True
+        )
 
 
 if __name__ == "__main__":
