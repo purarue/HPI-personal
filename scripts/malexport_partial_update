@@ -1,34 +1,50 @@
-#!/usr/bin/env bash
-# if -e is provided, just does export
-# if -h is provided, just does history
-# otherwise, does both
+#!/usr/bin/env python3
 
-main() {
-	local rexport history noflags
-	rexport=''
-	history=''
-	noflags=''
-	while getopts eh opt; do
-		case "$opt" in
-		e)
-			rexport=1
-			;;
-		h)
-			history=1
-			;;
-		*) ;;
-		esac
-	done
-	shift "$((OPTIND - 1))"
-	[[ -z "$rexport" && -z "$history" ]] && noflags=1
-	if [[ -n "$rexport" || -n "$noflags" ]]; then
-		echo 'Running export...' >&2
-		malexport update export -u "$MAL_USERNAME" || return $?
-	fi
-	if [[ -n "$history" || -n "$noflags" ]]; then
-		echo 'Downloading recent history...' >&2
-		MALEXPORT_EPISODE_LIMIT="${1:-1}" malexport update history -u "$MAL_USERNAME" -o anime -c "${2:-5}" || return $?
-	fi
-}
+import os
+import click
 
-main "$@" || exit $?
+
+
+@click.command()
+@click.option(
+    "-u",
+    "--username",
+    help="MAL username",
+    envvar="MAL_USERNAME",
+    required=True,
+)
+@click.option(
+    "-e",
+    "--export",
+    help="Update export",
+    is_flag=True,
+)
+@click.option(
+    "-h",
+    "--history",
+    help="Update history",
+    is_flag=True,
+)
+@click.argument("HISTORY_COUNT", type=int, default=5)
+@click.argument("EPISODE_LIMIT", type=int, default=1)
+def main(
+    username: str, export: bool, history: bool, episode_limit: int, history_count: int
+) -> None:
+    os.environ["MALEXPORT_EPISODE_LIMIT"] = str(episode_limit)
+
+    from malexport.list_type import ListType
+    from malexport.exporter.account import Account
+
+    account = Account.from_username(username)
+
+    if export or not (export or history):
+        click.echo("Updating export...", err=True)
+        account.update_exports()
+
+    if history or not (export or history):
+        click.echo("Updating history...", err=True)
+        account.update_history(count=history_count, only=ListType.ANIME, use_merged_file=True)
+
+
+if __name__ == "__main__":
+    main(prog_name="malexport_partial_update")
