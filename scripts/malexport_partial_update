@@ -24,10 +24,22 @@ import click
     help="Update history",
     is_flag=True,
 )
+@click.option(
+    "-m",
+    "--manga-history",
+    help="Update manga history",
+    type=int,
+    default=0,
+)
 @click.argument("HISTORY_COUNT", type=int, default=5)
 @click.argument("EPISODE_LIMIT", type=int, default=1)
 def main(
-    username: str, export: bool, history: bool, episode_limit: int, history_count: int
+    username: str,
+    export: bool,
+    history: bool,
+    episode_limit: int,
+    history_count: int,
+    manga_history: int,
 ) -> None:
     os.environ["MALEXPORT_EPISODE_LIMIT"] = str(episode_limit)
 
@@ -44,6 +56,12 @@ def main(
         click.echo("Updating history...", err=True)
         account.update_history(
             count=history_count, only=ListType.ANIME, use_merged_file=True
+        )
+
+    if manga_history > 0:
+        click.echo("Updating manga history...", err=True)
+        account.update_history(
+            count=manga_history, only=ListType.MANGA, use_merged_file=True
         )
 
 
