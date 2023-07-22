@@ -3,6 +3,6 @@
 set -o pipefail
 
 {
-	parse-zsh-history --reverse | jq '.command' | unique
+	parse-zsh-history --reverse -uo command
 	cat "${HOME}/.cache/ctrl_r_zsh_history"
 } | unique

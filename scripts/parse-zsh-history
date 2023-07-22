@@ -1,36 +1,64 @@
 #!/usr/bin/env python3
 
 import sys
+import json
 import os
 from pathlib import Path
+from typing import Literal
 
 import click
 from my.zsh import _parse_file
 from my.core.serialize import dumps
-from more_itertools import always_reversible
+from more_itertools import always_reversible, unique_everseen
 
 
 default: Path = Path(os.environ.get("ZDOTDIR", Path.home())) / ".zsh_history"
+default = Path(os.environ.get("HISTFILE", default))
 
 
 @click.command()
-@click.option("--reverse/--no-reverse", required=False, is_flag=True, default=False)
+@click.option(
+    "--reverse/--no-reverse",
+    required=False,
+    is_flag=True,
+    default=False,
+    show_default=True,
+)
+@click.option(
+    "-u", "--unique", required=False, is_flag=True, default=False, show_default=True
+)
+@click.option(
+    "-o",
+    "--output",
+    type=click.Choice(["json", "command"]),
+    default="json",
+    show_default=True,
+)
 @click.argument(
     "ZSH_HIST_FILE",
     type=click.Path(exists=True, path_type=Path),
     required=True,
-    default=default,
+    default=default.expanduser(),
 )
-def main(reverse: bool, zsh_hist_file: Path) -> None:
+def main(
+    reverse: bool, unique: bool, output: Literal["json", "command"], zsh_hist_file: Path
+) -> None:
     """
     Parses your current zsh history file as JSON
     """
     res = _parse_file(zsh_hist_file)
     if reverse:
         res = always_reversible(res)
-    for item in res:
-        sys.stdout.write(dumps(item))
-        sys.stdout.write("\n")
+    if unique:
+        res = unique_everseen(res, key=lambda x: x.command)
+    if output == "command":
+        for item in res:
+            sys.stdout.write(json.dumps(item.command))
+            sys.stdout.write("\n")
+    else:
+        for item in res:
+            sys.stdout.write(dumps(item))
+            sys.stdout.write("\n")
     sys.stdout.flush()
 
 

@@ -5,11 +5,13 @@ from urllib.parse import urlparse
 
 import click
 from more_itertools import unique_everseen
-from my.browser.active_browser import history
+from my.browser.active_browser import history as active_history
+from my.browser.all import history
 
 
-def urls() -> Iterator[str]:
-    for hist in history():
+def urls(active: bool) -> Iterator[str]:
+    func = active_history if active else history
+    for hist in func():
         if not hist.url.startswith("https://github.com/"):
             continue
         parts = urlparse(hist.url)
@@ -19,8 +21,9 @@ def urls() -> Iterator[str]:
 
 
 @click.command()
-def main() -> None:
-    for url in unique_everseen(urls()):
+@click.option("--active/--all", default=True, is_flag=True, show_default=True)
+def main(active: bool) -> None:
+    for url in unique_everseen(urls(active)):
         print(url)
 
 
