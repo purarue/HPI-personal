@@ -23,13 +23,21 @@ default = Path(os.environ.get("HISTFILE", default))
     is_flag=True,
     default=False,
     show_default=True,
+    help="Reverse the order of the history",
 )
 @click.option(
-    "-u", "--unique", required=False, is_flag=True, default=False, show_default=True
+    "-u",
+    "--unique",
+    required=False,
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="Remove duplicate commands",
 )
 @click.option(
     "-o",
     "--output",
+    help="Output format",
     type=click.Choice(["json", "command"]),
     default="json",
     show_default=True,
