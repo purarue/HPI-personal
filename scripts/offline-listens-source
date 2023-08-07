@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -o pipefail
+# unique listens using the listens script
+listens -j | jq -c 'del(.when)' | unique

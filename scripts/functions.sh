@@ -61,3 +61,17 @@ wq-mapscii() {
 	data="$(where_db query "$*" -o plain)" || return $?
 	mapscii-at "$data" --zoom 12
 }
+
+###########
+# my.mal
+###########
+
+mal() {
+	local -a args=(--order-type datetime --reverse)
+	if [[ -n "$1" ]]; then
+		args+=("$@")
+	else
+		args+=(--limit 100)
+	fi
+	hpi query my.mal.export.episodes -s "${args[@]}" | jq -s -r 'reverse | .[] | "\(.at)\t\(.title)\t\(.episode)"' | localize-datetimes | awk 'BEGIN { FS="\t" } {print "# " $2 "\n" $1 " - Episode " $3 }' | glow
+}

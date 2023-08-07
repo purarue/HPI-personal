@@ -14,13 +14,14 @@ from seanb.jsonfast import dumps
 from my.core.query_range import select_range, RangeTuple
 from my_feed.sources.model import FeedItem
 from my_feed.transform import transform
-from my_feed.sources import listens, mpv, facebook_spotify_listens
+from my_feed.sources import listens, mpv, facebook_spotify_listens, offline_listens
 
 
 def sources() -> Iterator[FeedItem]:
     yield from transform(listens.history)()
     yield from transform(mpv.history)()
     yield from transform(facebook_spotify_listens.history)()
+    yield from offline_listens.history()
 
 
 @click.command(help=__doc__)
