@@ -148,7 +148,7 @@ EXPORTS: List[Export] = [
 )
 def main(_override: int | None) -> None:
     """
-    Warn me to do exports I do manually, periodicaly
+    Warn me to do exports I do manually, periodically
     """
     click.echo(
         tabulate(
