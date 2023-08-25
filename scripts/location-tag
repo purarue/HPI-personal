@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+
+import time
+import json
+import pprint
+from pathlib import Path
+from datetime import datetime
+
+from typing import NamedTuple
+
+import click
+from my.config import data  # type: ignore[attr-defined]
+from more_itertools import last
+from my.location.gpslogger import inputs, _extract_locations
+
+from autotui.shortcuts import load_prompt_and_writeback
+
+datafile = data("location_tags.yaml")
+
+
+class LocationName(NamedTuple):
+    name: str
+    lat: float
+    lon: float
+    radius_metres: float
+    dt: datetime
+    geoinfo: str
+
+
+def reverse_geocode(lat: float, lon: float) -> str:
+    import geopy.geocoders  # type: ignore[import]
+
+    nom = geopy.geocoders.Nominatim(
+        user_agent="seanbreckenridge/HPI-personal/location-tag",
+    )
+    info = nom.reverse((lat, lon), timeout=30)  # type: ignore[arg-type]
+    json_data = info.raw
+    assert json_data is not None
+    assert isinstance(json_data, dict)
+    return json.dumps(json_data, separators=(",", ":"))
+
+
+@click.command()
+@click.argument("DATAFILE", type=Path, default=datafile)
+def main(datafile: Path) -> None:
+    latest = last(sorted(inputs(), key=lambda loc: loc.stat().st_mtime))
+    latest_loc = last(sorted(_extract_locations(latest), key=lambda loc: loc.dt))
+
+    assert latest_loc is not None
+    # prompt the user to confirm the location and how long ago it was recorded
+
+    geoinfo_dumped = reverse_geocode(latest_loc.lat, latest_loc.lon)
+
+    ts = latest_loc.dt.timestamp()
+    now = time.time()
+    ts_ago = int(now - ts)
+
+    if not click.confirm(
+        f"Confirm location {latest_loc.lat}, {latest_loc.lon} ({ts_ago} seconds ago)?",
+        default=True,
+    ):
+        click.echo("Aborting", err=True)
+        return
+
+    items = load_prompt_and_writeback(
+        LocationName,
+        datafile,
+        attr_use_values={
+            "lat": latest_loc.lat,
+            "lon": latest_loc.lon,
+            "dt": datetime.now,
+            "geoinfo": geoinfo_dumped,
+        },
+    )
+
+    added = last(items)
+
+    added = added._replace(geoinfo=json.loads(added.geoinfo))
+    pprint.pprint(added._asdict())
+
+
+if __name__ == "__main__":
+    main(prog_name="location-tag")
