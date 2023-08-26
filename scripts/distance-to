@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+
+import os
+import json
+import click
+from typing import Tuple
+
+from geopy.geocoders import Nominatim
+from geopy.location import Location
+from geopy.distance import distance
+
+
+def parse_lat_lon(
+    ctx: click.Context, param: click.Parameter, value: str
+) -> Tuple[float, float]:
+    """Parse latitude and longitude from a string."""
+    try:
+        lat, lon = value.split(",")
+        lat = float(lat)
+        lon = float(lon)
+    except ValueError:
+        raise click.BadParameter("Must be in the format lat,lon")
+    return lat, lon
+
+
+@click.command()
+@click.option(
+    "-f",
+    "--starting-location",
+    type=click.UNPROCESSED,
+    callback=parse_lat_lon,
+    required=True,
+)
+@click.option(
+    "-t", "--destination", type=str, prompt="Where do you want to go?", required=True
+)
+@click.option(
+    "-o",
+    "--output-format",
+    type=click.Choice(["text", "describe", "json"], case_sensitive=False),
+    default="text",
+)
+@click.option(
+    "--units",
+    type=click.Choice(["metric", "imperial"], case_sensitive=False),
+    default="metric",
+    show_default=True,
+)
+def main(
+    starting_location: Tuple[float, float],
+    destination: str,
+    output_format: str,
+    units: str,
+) -> None:
+    """Get directions from one place to another."""
+    geolocator = Nominatim(
+        user_agent=f"github.com/seanbreckenridge/HPI-personal/scripts/directions/{os.getlogin()}"
+    )
+    location = geolocator.geocode(destination)
+
+    if location is None:
+        raise click.BadParameter("Could not find destination")
+
+    assert isinstance(location, Location)
+    location_lat_lon = (location.latitude, location.longitude)
+
+    dist = distance(starting_location, location_lat_lon)
+
+    dist_formatted = f"{dist.km:.2f}km" if units == "metric" else f"{dist.miles:.2f}mi"
+
+    if output_format == "text":
+        click.echo(
+            f"Distance from {starting_location} to {location_lat_lon}: {dist_formatted}"
+        )
+    elif output_format == "json":
+        click.echo(
+            click.style(
+                json.dumps(
+                    {
+                        "starting_location": starting_location,
+                        "destination": location_lat_lon,
+                        "distance_str": dist_formatted,
+                        "distance_km": dist.km,
+                        "distance_miles": dist.miles,
+                    }
+                ),
+            )
+        )
+
+
+if __name__ == "__main__":
+    main(prog_name="directions")

@@ -78,3 +78,9 @@ mal() {
 	fi
 	hpi query my.mal.export.episodes "${args[@]}" | localize-datetimes -k at | jq -sr 'reverse | .[] | "# \(.title)\n\(.title) - Episode \(.episode)"' | glow -
 }
+
+# other random stuff
+
+dist() {
+	distance-to -f "$(last-gps-location)" --units imperial -t "$*"
+}
