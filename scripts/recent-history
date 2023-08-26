@@ -10,7 +10,7 @@ from browserexport.parse import read_visits
 from sqlite_backup.core import sqlite_backup
 from more_itertools import unique_everseen
 from pyfzf import FzfPrompt
-from pyperclip import copy
+from pyperclip import copy  # type: ignore
 from webbrowser import open_new_tab
 
 

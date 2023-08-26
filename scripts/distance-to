@@ -5,9 +5,9 @@ import json
 import click
 from typing import Tuple
 
-from geopy.geocoders import Nominatim
-from geopy.location import Location
-from geopy.distance import distance
+from geopy.geocoders import Nominatim  # type: ignore
+from geopy.location import Location  # type: ignore
+from geopy.distance import distance  # type: ignore
 
 
 def parse_lat_lon(
@@ -16,11 +16,9 @@ def parse_lat_lon(
     """Parse latitude and longitude from a string."""
     try:
         lat, lon = value.split(",")
-        lat = float(lat)
-        lon = float(lon)
+        return float(lat), float(lon)
     except ValueError:
         raise click.BadParameter("Must be in the format lat,lon")
-    return lat, lon
 
 
 @click.command()

@@ -78,7 +78,7 @@ class Export:
             ), f"func must be callable or iterator {self.func}"
 
             def _func() -> Iterator[Any]:
-                for o in self.func:
+                for o in self.func:  # type: ignore
                     yield o
 
             return _func

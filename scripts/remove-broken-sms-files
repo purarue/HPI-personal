@@ -5,7 +5,7 @@
 import os
 
 import click
-from logzero import logger
+from logzero import logger  # type: ignore[import]
 from my.smscalls import config, get_files, etree
 
 
