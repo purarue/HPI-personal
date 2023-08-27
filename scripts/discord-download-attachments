@@ -79,6 +79,8 @@ def main(discord_attachments_dir: Path) -> None:
             # make sure there are no broken files
             assert target.stat().st_size > 0, str(target)
 
+    click.echo(f"Done, saved {len(urls)} attachments", err=True)
+
 
 if __name__ == "__main__":
     main()
