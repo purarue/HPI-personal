@@ -26,7 +26,10 @@ from old_forums.forum import Post  # model from lib
 from old_forums.achievements import AchievementSelector, Achievement
 
 from my.core import get_files, Stats
+from my.core.common import LazyLogger
 from my.utils.input_source import InputSource
+
+logger = LazyLogger(__name__, level="warning")
 
 
 def forum_posts_inputs() -> Sequence[Path]:
@@ -48,7 +51,10 @@ def achievements(from_paths: InputSource = achievement_inputs) -> Iterator[Achie
     sels = AchievementSelector.load_from_blob(open(os.environ["OLD_FORUMS_SELECTORS"]))
     for path in from_paths():
         with path.open("r") as f:
-            yield from Achievement.parse_using_selectors(f, sels)
+            try:
+                yield from Achievement.parse_using_selectors(f, sels)
+            except RuntimeError as e:
+                logger.warning(f"error parsing {path}: {e}")
 
 
 def stats() -> Stats:
