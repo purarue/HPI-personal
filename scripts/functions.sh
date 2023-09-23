@@ -10,7 +10,7 @@
 
 alias albums-history='hpi query my.nextalbums.history'
 alias albums-to-listen='hpi query my.nextalbums.to_listen'
-# how many albums I have on my list that I havent listened to yet
+# how many albums I have on my list that I haven't listened to yet
 alias albums-left='albums-to-listen | jq length'
 # pipe a list of album blobs to this to describe them
 albums-describe() {

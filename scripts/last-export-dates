@@ -95,7 +95,7 @@ class Export:
         )
         assert callable(attrfunc), f"attrfunc must be callable {attrfunc}"
 
-        # sort function results by datetime, drop anything that cant be sorted
+        # sort function results by datetime, drop anything that can't be sorted
         itr = select_range(
             self.wfunc(), order_by_value_type=datetime, drop_unsorted=True
         )

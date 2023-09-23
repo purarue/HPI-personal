@@ -57,12 +57,12 @@ class user_config(location.where_db):  # type: ignore
 
     # after this date, rely on locations more than fallbacks
     # i.e., some date you after which you have accurate locations (I use gpslogger for this)
-    # if not provided, doesnt do heuristics
+    # if not provided, doesn't do heuristics
     accurate_date_cutoff: Optional[date] = None
 
     # if we're missing accurate data after the cutoff, use the previous location
     # till we have new data for this many days
-    # if not provided, doesnt do heuristics
+    # if not provided, doesn't do heuristics
     previous_accurate_for_days: Optional[int] = None
 
     # location for the database
@@ -184,7 +184,7 @@ def generate() -> Iterator[ModelDt]:
     # those for a week instead of home
     last_accurate: Optional[ModelDt] = None
 
-    # go past one day, incase of timezone-issues
+    # go past one day, in case of timezone-issues
     tomorrow = datetime.now() + timedelta(days=1)
 
     # loop through a day at a time, either using home

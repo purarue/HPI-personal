@@ -34,7 +34,7 @@ def main(print_count: bool, count: int) -> None:
         # ignore if not in music dir
         if not m.path.startswith(musicdir):
             continue
-        # ignore if this isnt in my playlists
+        # ignore if this isn't in my playlists
         if m.path not in playlist_songs:
             continue
         if history_daemon._filter_by(m):
