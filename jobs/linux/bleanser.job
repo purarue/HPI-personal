@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-evry 6 hours -bleanser-runall && {
+evry 2 hours -bleanser-runall && {
 	printlog 'remove-broken-sms-files: removing broken sms files...'
 	remove-broken-sms-files || {
 		send-error 'couldnt remove broken sms files'
