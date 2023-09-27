@@ -5,7 +5,7 @@ evry 12 hours -bleanser-zsh && {
 	((zsh_files > 30)) && bleanser-runall -t size zsh
 }
 
-evry 6 hours -bleanser-smscalls && {
+evry 1 hours -bleanser-smscalls && {
 	sms_size="$(find ~/data/SMSBackups -iname '*sms*' -type f | wc -l)"
 	((sms_size > 10)) && bleanser-runall -t size smscalls
 }
