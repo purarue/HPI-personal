@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 set -o pipefail
 # unique listens using the listens script
-# https://github.com/seanbreckenridge/core/blob/main/shellscripts/unique
+# https://github.com/seanbreckenridge/seanb-utils/blob/main/shellscripts/unique
 listens -j | jq -c 'del(.when)' | unique
