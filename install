@@ -44,5 +44,6 @@ if [[ ! -e "${MY_MODULES}" ]]; then
 	exit 1
 fi
 
+# shellcheck source=../HPI/install
 source "${MY_MODULES}/install"
 pmain "$@" || exit $?
