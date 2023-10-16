@@ -19,13 +19,13 @@ Among the other custom scripts in [`scripts`](./scripts), includes:
 
 ## Installation
 
-Requires `python3.7+`
+Requires `python3.10+`
 
 To install, first follow the instructions [on my HPI repo](https://github.com/seanbreckenridge/HPI#install)
 
 Then install this as editable:
 
-```
+```bash
 # install my HPI
 git clone https://github.com/seanbreckenridge/HPI-personal ./HPI-seanbreckenridge-personal
 python3 -m pip install -e ./HPI-seanbreckenridge-personal
