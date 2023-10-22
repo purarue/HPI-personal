@@ -4,14 +4,17 @@
 For exports which I have to do manually --
 i.e. go to some website, login, request and then
 download, this reminds me to do it when my newest
-local data is over 90 days old
+local data is over 28 days or some custom day count
 """
 
 from __future__ import annotations
+
+import json
 from time import time
 from pathlib import Path
 from functools import cached_property
 from typing import (
+    Tuple,
     cast,
     Any,
     Iterator,
@@ -33,7 +36,6 @@ from my.scramble.history import parsed_conf
 from my.core.query import attribute_func
 from my.core.query_range import select_range
 from tabulate import tabulate
-from seanb.notify import notify
 
 
 class FileResult(NamedTuple):
@@ -48,15 +50,6 @@ class FileResult(NamedTuple):
     def from_paths(cls, paths: Iterable[Path]) -> Iterator[FileResult]:
         for p in sorted(list(paths)):
             yield cls(p, datetime.fromtimestamp(p.stat().st_mtime))
-
-
-def _notify_over_days(name: str, over_days: int) -> None:
-    msg = f"{name} exported over {over_days} days ago"
-    click.echo(msg)
-    notify(
-        msg,
-        title="last-export-dates",
-    )
 
 
 AttrFunc = Callable[[Any], datetime]
@@ -110,11 +103,10 @@ class Export:
     def time_description(self, days_since: float) -> str:
         return f"{str(round(days_since, 2)).ljust(5)} / {self.over_days}"
 
-    def process(self, override_days: int | None) -> List[str]:
+    def process(self, override_days: int | None) -> Tuple[str, str, bool]:
         over_days = override_days or self.over_days
-        if self.days_since_export > over_days:
-            _notify_over_days(self.name, over_days)
-        return [self.name, self.time_description(self.days_since_export)]
+        is_expired = self.days_since_export > over_days
+        return (self.name, self.time_description(self.days_since_export), is_expired)
 
 
 EXPORTS: List[Export] = [
@@ -133,7 +125,7 @@ EXPORTS: List[Export] = [
         over_days=14,
     ),
     Export("Discord Data Export", my.discord.data_export.messages, over_days=150),
-    Export("Google Takeout", my.google.takeout.parser.events, over_days=90),
+    Export("Google Takeout", my.google.takeout.parser.events, over_days=150),
 ]
 
 
@@ -144,21 +136,41 @@ EXPORTS: List[Export] = [
     "_override",
     type=int,
     default=None,
-    help="If over this many days, notify/warn",
+    help="override default date for each export",
 )
-def main(_override: int | None) -> None:
+@click.option(
+    "-o",
+    "--output-format",
+    type=click.Choice(["table", "json"]),
+    default="table",
+    help="output format",
+)
+def main(_override: int | None, output_format: str) -> None:
     """
     Warn me to do exports I do manually, periodically
     """
-    click.echo(
-        tabulate(
-            list(map(lambda exp: exp.process(_override), EXPORTS)),
-            headers=(
-                "Export",
-                "Days Since",
-            ),
+    data = list(map(lambda exp: exp.process(_override), EXPORTS))
+    if output_format == "json":
+        click.echo(
+            json.dumps(
+                [
+                    {
+                        "export": name,
+                        "days_since": days_since,
+                        "expired": expired,
+                    }
+                    for (name, days_since, expired) in data
+                ]
+            )
         )
-    )
+
+    else:
+        click.echo(
+            tabulate(
+                data,
+                headers=("Export", "Days Since", "Expired"),
+            )
+        )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+evry 1 day -cache-last-export-dates && {
+	printlog 'cache-last-export-dates:caching...'
+	last-export-dates -o json | jq '.[] | select(.expired) | .export' -r | lower | sponge "${XDG_CACHE_HOME}/last-export-dates.txt"
+}
