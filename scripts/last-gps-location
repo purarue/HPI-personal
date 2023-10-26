@@ -8,10 +8,13 @@ from my.location.gpslogger import inputs, _extract_locations
 
 @click.command()
 @click.option("-d", "--delim", help="delimiter", default=",")
-def main(delim: str) -> None:
+@click.option("-p", "--precision", help="precision", default=6)
+def main(delim: str, precision: int) -> None:
     latest = last(sorted(inputs(), key=lambda loc: loc.stat().st_mtime))
     latest_loc = last(sorted(_extract_locations(latest), key=lambda loc: loc.dt))
-    print(f"{latest_loc.lat}{delim}{latest_loc.lon}")
+    lat = round(latest_loc.lat, precision)
+    lon = round(latest_loc.lon, precision)
+    print(f"{lat}{delim}{lon}")
 
 
 if __name__ == "__main__":
