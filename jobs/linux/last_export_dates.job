@@ -2,5 +2,5 @@
 
 evry 1 day -cache-last-export-dates && {
 	printlog 'cache-last-export-dates:caching...'
-	last-export-dates -o json | jq '.[] | select(.expired) | .export' -r | lower | sponge "${XDG_CACHE_HOME}/last-export-dates.txt"
+	last-export-dates -o json | jq '.[] | select(.expired) | .export' -r | lower | sponge "${HPIDATA}/last-export-dates.txt"
 }
