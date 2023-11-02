@@ -6,11 +6,11 @@ REQUIRES = ["ipgeocache"]
 
 from typing import Iterator
 
-from my.ip.common import IP  # type: ignore[import]
-from my.core.common import LazyLogger, Stats
+from my.ip.common import IP
+from my.core import make_logger, Stats
 from my.core.denylist import DenyList
 
-logger = LazyLogger(__name__)
+logger = make_logger(__name__)
 
 
 # helper to get path to data file in my data directory

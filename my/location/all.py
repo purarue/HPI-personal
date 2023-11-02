@@ -4,7 +4,7 @@ Merges location data from multiple sources -- this includes apple location data 
 
 from typing import Iterator
 
-from my.core import Stats, LazyLogger
+from my.core import Stats, make_logger
 
 from my.location import apple  # additional source
 from my.location import google_takeout, gpslogger, google_takeout_semantic
@@ -13,7 +13,7 @@ from my.core.error import warn_exceptions
 from my.location.common import Location
 
 
-logger = LazyLogger(__name__, level="warning")
+logger = make_logger(__name__, level="warning")
 
 
 def locations() -> Iterator[Location]:

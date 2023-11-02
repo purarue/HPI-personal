@@ -25,11 +25,10 @@ from autotui.shortcuts import load_from
 from old_forums.forum import Post  # model from lib
 from old_forums.achievements import AchievementSelector, Achievement
 
-from my.core import get_files, Stats
-from my.core.common import LazyLogger
+from my.core import get_files, Stats, make_logger
 from my.utils.input_source import InputSource
 
-logger = LazyLogger(__name__, level="warning")
+logger = make_logger(__name__, level="warning")
 
 
 def forum_posts_inputs() -> Sequence[Path]:
