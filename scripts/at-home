@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+
+import click
+from more_itertools import last
+from my.location.gpslogger import inputs, _extract_locations
+from my.config import location
+from geopy.distance import distance as dist_km  # type: ignore
+
+
+@click.command()
+@click.option("-v", "--verbose", is_flag=True)
+@click.option("-d", "--distance", default=0.1, type=float, help="Distance in km")
+def main(verbose: bool, distance: float):
+    """
+    Check if I'm at home
+    """
+
+    latest = last(sorted(inputs(), key=lambda loc: loc.stat().st_mtime))
+    latest_loc = last(sorted(_extract_locations(latest), key=lambda loc: loc.dt))
+
+    latest_home_info = last(location.home)
+    assert isinstance(latest_home_info, tuple)
+    assert len(latest_home_info) == 2
+    home_latlon = latest_home_info[1]
+    assert isinstance(home_latlon, tuple)
+    assert len(home_latlon) == 2
+
+    cur_latlon = (latest_loc.lat, latest_loc.lon)
+
+    dist = dist_km(home_latlon, cur_latlon)
+
+    if verbose:
+        click.echo(f"home: {home_latlon}", err=True)
+        click.echo(f"current: {cur_latlon}", err=True)
+        click.echo(f"distance: {dist.km} km", err=True)
+
+    if dist.km < distance:
+        if verbose:
+            click.echo("at home", err=True)
+        return 0
+    else:
+        if verbose:
+            click.echo("not at home", err=True)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
