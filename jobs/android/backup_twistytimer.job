@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-
-evry 10 minutes -twistytimer && {
-	rsync -Pavh ~/shared/TwistyTimer/Backup/ ~/data/cubing/phone_twistytimer
-	find ~/shared/TwistyTimer/Backup/ -type f -print -delete
-}
