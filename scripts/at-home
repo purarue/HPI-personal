@@ -8,8 +8,8 @@ from geopy.distance import distance as dist_km  # type: ignore
 
 
 @click.command()
-@click.option("-v", "--verbose", is_flag=True)
-@click.option("-d", "--distance", default=0.1, type=float, help="Distance in km")
+@click.option("-v", "--verbose", is_flag=True, help="print location info")
+@click.option("-d", "--distance", default=0.1, type=float, help="distance in km")
 def main(verbose: bool, distance: float):
     """
     Check if I'm at home
@@ -19,11 +19,11 @@ def main(verbose: bool, distance: float):
     latest_loc = last(sorted(_extract_locations(latest), key=lambda loc: loc.dt))
 
     latest_home_info = last(location.home)
-    assert isinstance(latest_home_info, tuple)
-    assert len(latest_home_info) == 2
+    assert isinstance(latest_home_info, tuple), latest_home_info
+    assert len(latest_home_info) == 2, latest_home_info
     home_latlon = latest_home_info[1]
-    assert isinstance(home_latlon, tuple)
-    assert len(home_latlon) == 2
+    assert isinstance(home_latlon, tuple), home_latlon
+    assert len(home_latlon) == 2, home_latlon
 
     cur_latlon = (latest_loc.lat, latest_loc.lon)
 
