@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
-# seems to be a bug with the sms backup & restore app
-# creates partially written xml files, perhaps when the app is killed??
+"""
+removes any broken XML files in the sms backup directory
+
+seems to be a bug with the sms backup & restore app?
+creates partially written xml files
+"""
 
 import os
 
@@ -9,9 +13,19 @@ from logzero import logger  # type: ignore[import]
 from my.smscalls import config, get_files, etree
 
 
-def main() -> None:
+@click.command(help=__doc__)
+@click.option(
+    "-v",
+    "--verbose",
+    is_flag=True,
+    help="Show debug info",
+    default=False,
+)
+def main(verbose: bool) -> None:
     for xml_file in get_files(config.export_path, glob="*.xml"):
         assert "SMSBackups" in str(xml_file), f"Unexpected file: {xml_file}"
+        if verbose:
+            logger.debug(f"Checking {xml_file}")
         try:
             etree.parse(xml_file)
         except etree.XMLSyntaxError as e:
