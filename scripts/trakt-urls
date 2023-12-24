@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Iterator, Optional, Set
 
 import click
 from traktexport.dal import _parse_history, HistoryEntry
@@ -14,6 +14,15 @@ def parse_file(path: Path) -> Iterator[HistoryEntry]:
         raise ValueError("Invalid file")
     hist = data["history"]
     yield from _parse_history(hist)
+
+
+def _print_urls(items: Iterator[HistoryEntry], emitted: Set[str]) -> None:
+    for e in items:
+        u = e.media_data.url
+        if u in emitted:
+            continue
+        click.echo(u)
+        emitted.add(u)
 
 
 @click.command()
@@ -32,13 +41,9 @@ def main(trakt_username: Optional[str]) -> None:
     files = list(get_dir("trakt").rglob("*.json"))
     files.sort(key=lambda f: f.stat().st_size)
 
-    emitted = set()
+    emitted: Set[str] = set()
     for f in files:
-        for e in parse_file(f):
-            u = e.media_data.url
-            if u in emitted:
-                continue
-            click.echo(u)
+        _print_urls(parse_file(f), emitted)
 
     # fetch first page of history from trakt
     if trakt_username is not None:
@@ -52,11 +57,7 @@ def main(trakt_username: Optional[str]) -> None:
             click.echo(f"Error fetching history: {e}", err=True)
             return
 
-        for e in _parse_history(data):
-            u = e.media_data.url
-            if u in emitted:
-                continue
-            click.echo(u)
+        _print_urls(_parse_history(data), emitted)
 
 
 if __name__ == "__main__":
