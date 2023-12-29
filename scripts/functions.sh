@@ -8,6 +8,8 @@
 # my.albums
 #############
 
+alias albums-all='hpi query my.nextalbums._albums'
+alias albums-all-desc='albums-all -s | albums-describe'
 alias albums-history='hpi query my.nextalbums.history'
 alias albums-to-listen='hpi query my.nextalbums.to_listen'
 # how many albums I have on my list that I haven't listened to yet
@@ -20,7 +22,7 @@ albums-describe-score() {
 	jq -r '"[\(.score) | \(.listened_on)] \(.cover_artists) - \(.album_name) (\(.year))"'
 }
 # any albums which I can't find/have to order physical copies for to listen to
-alias albums-cant-find="hpi query -s my.nextalbums._albums | jq -r 'select(.note==\"cant find\")' | albums-describe"
+alias albums-cant-find="albums-all -s | jq -r 'select(.note==\"cant find\")' | albums-describe"
 # list any albums I have yet to listen to, sorted by how many awards they've won
 albums-awards() {
 	local COUNT="${1:-10}"
