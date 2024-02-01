@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+
+import click
+from pathlib import Path
+import my.activitywatch.active_window
+from active_window.parse import AWParserError
+
+
+@click.command()
+@click.option("--src-dir", default="~/.local/share/window_watcher", type=str)
+def main(src_dir: str) -> None:
+    pth = Path(src_dir).expanduser()
+    try:
+        list(my.activitywatch.active_window.history())
+    except AWParserError as ae:
+        src_file = pth / ae.path.name
+        if src_file.exists():
+            click.echo("Opening in src dir", err=True)
+            click.echo(src_file)
+        else:
+            click.echo(ae.path)
+
+
+if __name__ == "__main__":
+    main()
