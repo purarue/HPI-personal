@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import random
 import click
 
 from more_itertools import last
@@ -7,13 +8,17 @@ from my.location.gpslogger import inputs, _extract_locations
 
 
 @click.command()
-@click.option("-d", "--delim", help="delimiter", default=",")
-@click.option("-p", "--precision", help="precision", default=6)
-def main(delim: str, precision: int) -> None:
+@click.option("-d", "--delim", help="char to use between characters", default=",")
+@click.option("-p", "--precision", help="how many decimals", default=6)
+@click.option("-f", "--fuzz", help="fuzz out the location", default=0, type=float)
+def main(delim: str, precision: int, fuzz: float) -> None:
     latest = last(sorted(inputs(), key=lambda loc: loc.stat().st_mtime))
     latest_loc = last(sorted(_extract_locations(latest), key=lambda loc: loc.dt))
     lat = round(latest_loc.lat, precision)
     lon = round(latest_loc.lon, precision)
+    if fuzz:
+        lat += round(random.uniform(-fuzz, fuzz), precision)
+        lon += round(random.uniform(-fuzz, fuzz), precision)
     print(f"{lat}{delim}{lon}")
 
 

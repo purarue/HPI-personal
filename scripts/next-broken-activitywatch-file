@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
-import click
+import sys
 from pathlib import Path
+
+import click
 import my.activitywatch.active_window
 from active_window.parse import AWParserError
 
@@ -19,6 +21,8 @@ def main(src_dir: str) -> None:
             click.echo(src_file)
         else:
             click.echo(ae.path)
+        sys.exit(0)
+    sys.exit(1)
 
 
 if __name__ == "__main__":
