@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
 import json
+import subprocess
 import typing as t
 from pathlib import Path
 
 import click
 from more_itertools import unique_everseen, ilen
 from my.mpv.history_daemon import all_history, Media, inputs
+from mpv_history_daemon.serialize import parse_json_file
 
 disallowed_exact = (
     "log",
@@ -63,7 +65,7 @@ def clean_file(jf: Path) -> None:
     Removes any disallowed keys from the metadata object, tracked by
     https://github.com/seanbreckenridge/mpv-history-daemon
     """
-    data = json.loads(jf.read_text())
+    data = parse_json_file(jf)
     blobs = [data]
     if "mapping" in data:
         blobs = data["mapping"].values()
@@ -78,7 +80,20 @@ def clean_file(jf: Path) -> None:
                     for rk in removed_keys:
                         metadata.pop(rk)
                     print(f"Removed {removed_keys}, fixed {metadata}")
-    jf.write_text(json.dumps(data))
+    # theres a possibility this is a gz file, so test for that
+    # and just write back to the JSON file
+    #
+    # then, if it was a gz file, use gzip -9 {file} to compress it
+    # back to a .json.gz file
+    if jf.suffix == ".gz":
+        without_gz = jf.with_suffix("")
+        click.echo(f"Writing to {without_gz}", err=True)
+        without_gz.write_text(json.dumps(data))
+        click.echo(f"Compressing {without_gz}", err=True)
+        subprocess.run(["gzip", "-f", "-9", str(without_gz)], check=True)
+        assert jf.exists()
+    else:
+        jf.write_text(json.dumps(data))
 
 
 @click.command()
