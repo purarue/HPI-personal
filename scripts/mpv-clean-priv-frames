@@ -32,6 +32,7 @@ disallowed_exact = (
 )
 
 disallowed_contains = (
+    "location",
     "id3v2_priv",
     "gracenote",
     "organization",
