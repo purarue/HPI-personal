@@ -9,13 +9,14 @@ import shutil
 from collections import defaultdict
 from typing import Iterable, Literal
 
+import click
+import pyfzf
 from rich.console import Console
 from rich.panel import Panel
 from rich.align import Align
-
-import click
-import pyfzf
-from my.smscalls import messages, Message
+from my.core import get_files
+from more_itertools import last
+from my.smscalls import Message, _extract_messages, config
 from my.core.error import drop_exceptions
 
 
@@ -33,7 +34,7 @@ console_width = shutil.get_terminal_size().columns
 
 
 def display_message(message: Message, align: Literal["left", "right"] = "left") -> None:
-    date_str = message.dt.strftime("%Y-%m-%d %H:%M:%S")
+    date_str = message.dt.astimezone().strftime("%Y-%m-%d %H:%M:%S")
 
     if align == "left":
         box = Panel.fit(
@@ -50,9 +51,13 @@ def display_message(message: Message, align: Literal["left", "right"] = "left") 
         console.print(box)
 
 
-@click.command()
-def main() -> None:
-    convos = group_by_convo(sorted(drop_exceptions(messages()), key=lambda m: m.dt))
+def latest_messages() -> list[Message]:
+    files = list(get_files(config.export_path, glob="sms-*.xml"))
+    files.sort(key=lambda f: f.stat().st_mtime)
+    return sorted(drop_exceptions(_extract_messages(last(files))), key=lambda m: m.dt)
+
+
+def pick_convo(convos: dict[str, list[Message]]) -> list[Message]:
     fzf = pyfzf.FzfPrompt(default_options="--multi --cycle --reverse")
     mem = {}  # prompt to message mapping
     for phone_number, msgs in convos.items():
@@ -64,7 +69,7 @@ def main() -> None:
     convo = fzf.prompt(mem)
     if not convo:
         click.secho("No convo selected", fg="red")
-        return
+        return []
 
     use_messages = []
     for k in convo:
@@ -72,8 +77,13 @@ def main() -> None:
 
     use_messages.sort(key=lambda m: m.dt)
 
-    # Print the messages left/right back and forth, like a SMS app
-    for message in use_messages:
+    return use_messages
+
+
+@click.command()
+def main() -> None:
+    convos = group_by_convo(latest_messages())
+    for message in pick_convo(convos):
         if message.from_me:
             display_message(message)
         else:
