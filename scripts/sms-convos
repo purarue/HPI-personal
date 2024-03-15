@@ -1,0 +1,85 @@
+#!/usr/bin/env python3
+
+"""
+Parses my SMS messages, lets me pick one or more conversations (incase multiple numbers are the same person)
+and then displays the messages in a chat-like format, alternating colors for me/other person
+"""
+
+import shutil
+from collections import defaultdict
+from typing import Iterable, Literal
+
+from rich.console import Console
+from rich.panel import Panel
+from rich.align import Align
+
+import click
+import pyfzf
+from my.smscalls import messages, Message
+from my.core.error import drop_exceptions
+
+
+def group_by_convo(messages: Iterable[Message]) -> dict[str, list[Message]]:
+    convos = defaultdict(list)
+    for message in messages:
+        convos[message.phone_number].append(message)
+    return convos
+
+
+console = Console()
+
+
+console_width = shutil.get_terminal_size().columns
+
+
+def display_message(message: Message, align: Literal["left", "right"] = "left") -> None:
+    date_str = message.dt.strftime("%Y-%m-%d %H:%M:%S")
+
+    if align == "left":
+        box = Panel.fit(
+            message.message, title=date_str, border_style="blue", width=console_width
+        )
+        console.print(box)
+    else:
+        box = Panel.fit(
+            Align(message.message, align="right", width=console_width),
+            title=date_str,
+            border_style="red",
+            width=console_width,
+        )
+        console.print(box)
+
+
+@click.command()
+def main() -> None:
+    convos = group_by_convo(sorted(drop_exceptions(messages()), key=lambda m: m.dt))
+    fzf = pyfzf.FzfPrompt(default_options="--multi --cycle --reverse")
+    mem = {}  # prompt to message mapping
+    for phone_number, msgs in convos.items():
+        if not msgs:
+            continue
+        msg = msgs[-1]
+        key = f"{phone_number} {msg.who} ({len(msgs)} messages)"
+        mem[key] = msgs
+    convo = fzf.prompt(mem)
+    if not convo:
+        click.secho("No convo selected", fg="red")
+        return
+
+    use_messages = []
+    for k in convo:
+        use_messages.extend(mem[k])
+
+    use_messages.sort(key=lambda m: m.dt)
+
+    # Print the messages left/right back and forth, like a SMS app
+    for message in use_messages:
+        if message.from_me:
+            display_message(message)
+        else:
+            display_message(message, align="right")
+        click.echo()
+
+
+if __name__ == "__main__":
+    main()
