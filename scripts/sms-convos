@@ -35,8 +35,9 @@ class MsgData(NamedTuple):
         # TODO: add more matches for other area codes?
         if phone_number.startswith("+1"):
             phone_number = phone_number[2:]
+        # remove '-'s
         return cls(
-            phone_number=phone_number,
+            phone_number=phone_number.replace("-", "").strip(),
             dt=msg.dt,
             who=msg.who,
             from_me=msg.from_me,
