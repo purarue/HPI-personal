@@ -7,7 +7,8 @@ and then displays the messages in a chat-like format, alternating colors for me/
 
 import shutil
 from collections import defaultdict
-from typing import Iterable, Literal
+from typing import Iterable, Literal, NamedTuple, Self
+from datetime import datetime
 
 import click
 import pyfzf
@@ -16,14 +17,38 @@ from rich.panel import Panel
 from rich.align import Align
 from my.core import get_files
 from more_itertools import last
-from my.smscalls import Message, _extract_messages, config
+from my.smscalls import Message as HPIMessage, _extract_messages, config
 from my.core.error import drop_exceptions
 
 
-def group_by_convo(messages: Iterable[Message]) -> dict[str, list[Message]]:
+# just extract the useful info from this
+class MsgData(NamedTuple):
+    dt: datetime
+    phone_number: str
+    who: str | None
+    from_me: bool
+    text: str
+
+    @classmethod
+    def from_hpi_msg(cls, msg: HPIMessage) -> Self:
+        phone_number = msg.phone_number
+        # TODO: add more matches for other area codes?
+        if phone_number.startswith("+1"):
+            phone_number = phone_number[2:]
+        return cls(
+            phone_number=phone_number,
+            dt=msg.dt,
+            who=msg.who,
+            from_me=msg.from_me,
+            text=msg.message,
+        )
+
+
+def group_by_convo(messages: Iterable[HPIMessage]) -> dict[str, list[MsgData]]:
     convos = defaultdict(list)
     for message in messages:
-        convos[message.phone_number].append(message)
+        m = MsgData.from_hpi_msg(message)
+        convos[m.phone_number].append(m)
     return convos
 
 
@@ -33,17 +58,17 @@ console = Console()
 console_width = shutil.get_terminal_size().columns
 
 
-def display_message(message: Message, align: Literal["left", "right"] = "left") -> None:
+def display_message(message: MsgData, align: Literal["left", "right"] = "left") -> None:
     date_str = message.dt.astimezone().strftime("%Y-%m-%d %H:%M:%S")
 
     if align == "left":
         box = Panel.fit(
-            message.message, title=date_str, border_style="blue", width=console_width
+            message.text, title=date_str, border_style="blue", width=console_width
         )
         console.print(box)
     else:
         box = Panel.fit(
-            Align(message.message, align="right", width=console_width),
+            Align(message.text, align="right", width=console_width),
             title=date_str,
             border_style="red",
             width=console_width,
@@ -51,13 +76,13 @@ def display_message(message: Message, align: Literal["left", "right"] = "left") 
         console.print(box)
 
 
-def latest_messages() -> list[Message]:
+def latest_messages() -> list[HPIMessage]:
     files = list(get_files(config.export_path, glob="sms-*.xml"))
     files.sort(key=lambda f: f.stat().st_mtime)
     return sorted(drop_exceptions(_extract_messages(last(files))), key=lambda m: m.dt)
 
 
-def pick_convo(convos: dict[str, list[Message]]) -> list[Message]:
+def pick_convo(convos: dict[str, list[MsgData]]) -> list[MsgData]:
     fzf = pyfzf.FzfPrompt(default_options="--multi --cycle --reverse")
     mem = {}  # prompt to message mapping
     for phone_number, msgs in convos.items():
