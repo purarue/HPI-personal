@@ -19,6 +19,9 @@ def main(delim: str, precision: int, fuzz: float) -> None:
     if fuzz:
         lat += round(random.uniform(-fuzz, fuzz), precision)
         lon += round(random.uniform(-fuzz, fuzz), precision)
+    if precision == 0:
+        lat = int(lat)
+        lon = int(lon)
     print(f"{lat}{delim}{lon}")
 
 
