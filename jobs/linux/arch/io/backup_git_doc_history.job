@@ -1,15 +1,6 @@
 #!/usr/bin/env bash
 
 evry 5 minutes -backup_git_doc_history && {
-	hostname="$(cat /etc/hostname)" || hostname='unset'
-	if [[ "$hostname" == 'unset' ]]; then
-		printlog "git_doc_history: hostname is unset, aborting"
-		exit 1
-	fi
-	[[ "$hostname" == 'io' ]] || {
-		printlog "git_doc_history: hostname is not io, aborting"
-		exit 1
-	}
 	for backup in eva frinkconv mysql newsboat node plaintext_playlist ranger todo; do
 		printlog "git_doc_history: backing up $backup"
 		git_doc_history "$backup" >>/tmp/git_doc_history.log 2>&1
