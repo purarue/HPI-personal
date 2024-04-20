@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+
+import my.zsh
+
+import click
+
+
+@click.command()
+def main() -> None:
+    for file in my.zsh.backup_inputs():
+        for line in my.zsh._parse_file(file):
+            if not line.dt:
+                print(file, line)
+
+
+if __name__ == "__main__":
+    main()
