@@ -5,6 +5,7 @@ from pathlib import Path
 
 import click
 import my.activitywatch.active_window
+from kompress import CPath
 from active_window.parse import AWParserError
 
 
@@ -15,7 +16,7 @@ def main(src_dir: str) -> None:
     try:
         list(my.activitywatch.active_window.history())
     except AWParserError as ae:
-        src_file = pth / ae.path.name
+        src_file = CPath(pth / ae.path.name)
         if src_file.exists():
             click.echo("Opening in src dir", err=True)
             click.echo(src_file)
