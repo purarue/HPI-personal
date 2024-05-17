@@ -61,20 +61,14 @@ console_width = shutil.get_terminal_size().columns
 
 def display_message(message: MsgData, align: Literal["left", "right"] = "left") -> None:
     date_str = message.dt.astimezone().strftime("%Y-%m-%d %H:%M:%S")
-
-    if align == "left":
-        box = Panel.fit(
-            message.text, title=date_str, border_style="blue", width=console_width
-        )
-        console.print(box)
-    else:
-        box = Panel.fit(
-            Align(message.text, align="right", width=console_width),
-            title=date_str,
-            border_style="red",
-            width=console_width,
-        )
-        console.print(box)
+    color = "blue" if align == "left" else "red"
+    box = Panel.fit(
+        Align(message.text, align=align, width=console_width),
+        title=date_str,
+        border_style=color,
+        width=console_width,
+    )
+    console.print(box)
 
 
 def latest_messages() -> list[HPIMessage]:
@@ -86,7 +80,9 @@ def latest_messages() -> list[HPIMessage]:
 def pick_convo(convos: dict[str, list[MsgData]]) -> list[MsgData]:
     fzf = pyfzf.FzfPrompt(default_options="--multi --cycle --reverse")
     mem = {}  # prompt to message mapping
-    for phone_number, msgs in convos.items():
+    for phone_number, msgs in sorted(
+        convos.items(), key=lambda x: len(x[1]), reverse=True
+    ):
         if not msgs:
             continue
         msg = msgs[-1]
