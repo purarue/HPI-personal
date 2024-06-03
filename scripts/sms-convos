@@ -63,8 +63,8 @@ class MsgData(NamedTuple):
         ), f"Unexpected type {phone_number} {type(phone_number)}"
         content = ""
         for p in msg.parts:
-            if p.content_type == "text/plain":
-                content += p.data + "\n"
+            if p.content_type == "text/plain" and p.text is not None:
+                content += p.text + "\n"
         if not content:
             raise RuntimeError("No content in MMS")
         return cls(
