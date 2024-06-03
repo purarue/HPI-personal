@@ -17,13 +17,27 @@ from rich.panel import Panel
 from rich.align import Align
 from my.core import get_files
 from more_itertools import last
-from my.smscalls import Message as HPIMessage, _extract_messages, config
+from my.smscalls import (
+    Message as HPIMessage,
+    MMS,
+    _extract_mms,
+    _extract_messages,
+    config,
+)
 from my.core.error import drop_exceptions
+
+
+def clean_number(s: str) -> str:
+    # TODO: add more matches for other area codes?
+    if s.startswith("+1"):
+        s = s[2:]
+    return s.replace("-", "").strip()
 
 
 # just extract the useful info from this
 class MsgData(NamedTuple):
     dt: datetime
+    key: str
     phone_number: str
     who: str | None
     from_me: bool
@@ -31,25 +45,52 @@ class MsgData(NamedTuple):
 
     @classmethod
     def from_hpi_msg(cls, msg: HPIMessage) -> Self:
-        phone_number = msg.phone_number
-        # TODO: add more matches for other area codes?
-        if phone_number.startswith("+1"):
-            phone_number = phone_number[2:]
-        # remove '-'s
+        pn = clean_number(msg.phone_number)
         return cls(
-            phone_number=phone_number.replace("-", "").strip(),
+            phone_number=pn,
+            key=pn,
             dt=msg.dt,
             who=msg.who,
             from_me=msg.from_me,
             text=msg.message,
         )
 
+    @classmethod
+    def from_hpi_mms(cls, msg: MMS) -> Self:
+        phone_number = msg.from_user
+        assert isinstance(
+            phone_number, str
+        ), f"Unexpected type {phone_number} {type(phone_number)}"
+        content = ""
+        for p in msg.parts:
+            if p.content_type == "text/plain":
+                content += p.data + "\n"
+        if not content:
+            raise RuntimeError("No content in MMS")
+        return cls(
+            text=content.strip(),
+            key=msg.phone_number,  # often contains multiple numbers for MMS
+            dt=msg.dt,
+            who=msg.who,
+            from_me=msg.from_me,
+            phone_number=clean_number(phone_number),
+        )
 
-def group_by_convo(messages: Iterable[HPIMessage]) -> dict[str, list[MsgData]]:
+
+def group_by_convo(messages: Iterable[HPIMessage | MMS]) -> dict[str, list[MsgData]]:
     convos = defaultdict(list)
     for message in messages:
-        m = MsgData.from_hpi_msg(message)
-        convos[m.phone_number].append(m)
+        if isinstance(message, MMS):
+            try:
+                m = MsgData.from_hpi_mms(message)
+            except RuntimeError as re:
+                if str(re) == "No content in MMS":
+                    continue
+            else:
+                convos[m.key].append(m)
+        else:
+            m = MsgData.from_hpi_msg(message)
+            convos[m.key].append(m)
     return convos
 
 
@@ -64,17 +105,22 @@ def display_message(message: MsgData, align: Literal["left", "right"] = "left") 
     color = "blue" if align == "left" else "red"
     box = Panel.fit(
         Align(message.text, align=align, width=console_width),
-        title=date_str,
+        title=f"{message.phone_number} - {date_str}",
         border_style=color,
         width=console_width,
     )
     console.print(box)
 
 
-def latest_messages() -> list[HPIMessage]:
+def latest_messages() -> list[HPIMessage | MMS]:
     files = list(get_files(config.export_path, glob="sms-*.xml"))
     files.sort(key=lambda f: f.stat().st_mtime)
-    return sorted(drop_exceptions(_extract_messages(last(files))), key=lambda m: m.dt)
+
+    msgs = list(drop_exceptions(_extract_messages(last(files))))
+    mmss = list(drop_exceptions(_extract_mms(last(files))))
+    all_msgs: list[HPIMessage | MMS] = msgs + mmss
+    all_msgs.sort(key=lambda m: m.dt)
+    return all_msgs
 
 
 def pick_convo(convos: dict[str, list[MsgData]]) -> list[MsgData]:
