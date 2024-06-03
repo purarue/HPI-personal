@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+
+"""
+Initializes the z database for https://github.com/rupa/z
+using my ttt history
+
+z-init-database >~/.z to create an initial database
+using my ttt history
+"""
+
+from pathlib import Path
+from dataclasses import dataclass
+from datetime import datetime
+
+import click
+from my.ttt import history
+
+
+@dataclass
+class ZdbEntry:
+    location: str
+    score: int
+    last_accessed: datetime
+
+
+@click.command()
+def main() -> None:
+    mapping: dict[Path, ZdbEntry] = {}
+    for h in history():
+        if not h.directory:
+            continue
+        ddir = Path(h.directory)
+        if not ddir.exists():
+            continue
+        if ddir not in mapping:
+            mapping[ddir] = ZdbEntry(str(ddir), 1, h.dt)
+        else:
+            mapping[ddir].score += 1
+            if h.dt > mapping[ddir].last_accessed:
+                mapping[ddir].last_accessed = h.dt
+
+    for v in mapping.values():
+        click.echo(f"{v.location}|{v.score}|{int(v.last_accessed.timestamp())}")
+
+
+if __name__ == "__main__":
+    main(prog_name="z-init-database")
