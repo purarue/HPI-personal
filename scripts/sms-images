@@ -23,16 +23,18 @@ app_cache_dir = os.path.join(cache_dir, "sms-images")
 
 @click.command()
 def main() -> None:
-    os.makedirs(app_cache_dir, exist_ok=True)
+    size = 0
+    items = 0
 
     for msg in mms():
         if isinstance(msg, Exception):
             continue
         datestr = f"{msg.dt.timestamp()}"
         for part in msg.parts:
+            if part.data is None:
+                continue
             if part.content_type not in ("image/png", "image/jpeg"):
                 continue
-
             im = Image.open(BytesIO(base64.b64decode(part.data)))
             extension = "png" if part.content_type == "image/png" else "jpg"
             # folder with the phone_number (sort of like a hash)
@@ -43,9 +45,15 @@ def main() -> None:
                 output_filedir, f"{datestr}-{part.filename}.{extension}"
             )
             if not os.path.exists(output_filename):
-                click.secho(f"Saving {output_filename}", fg="green")
+                click.echo(f"Saving {output_filename}")
                 with open(output_filename, "wb") as f:
                     im.save(f)
+
+            st = os.stat(output_filename)
+            size += st.st_size
+            items += 1
+
+    click.echo(f"Done, saved {items} images, using {round(size / 1024 / 1024, 3)} MB")
 
 
 if __name__ == "__main__":
