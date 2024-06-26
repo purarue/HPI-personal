@@ -110,7 +110,9 @@ class Export:
 
 
 EXPORTS: List[Export] = [
-    Export("TwistyTimer", FileResult.from_paths(parsed_conf["twistytimer"])),
+    Export(
+        "TwistyTimer", FileResult.from_paths(parsed_conf["twistytimer"]), over_days=150
+    ),
     Export(
         "ActivityWatch Phone",
         active_window.history(
