@@ -113,14 +113,14 @@ EXPORTS: List[Export] = [
     Export(
         "TwistyTimer", FileResult.from_paths(parsed_conf["twistytimer"]), over_days=150
     ),
-    Export(
-        "ActivityWatch Phone",
-        active_window.history(
-            from_paths=lambda: [
-                p for p in active_window.inputs() if "aw-window/phone" in str(p)
-            ]
-        ),
-    ),
+    # Export(
+    #     "ActivityWatch Phone",
+    #     active_window.history(
+    #         from_paths=lambda: [
+    #             p for p in active_window.inputs() if "aw-window/phone" in str(p)
+    #         ]
+    #     ),
+    # ),
     Export(
         "SMS Export",
         FileResult.from_paths(get_files(smscalls.config.export_path, glob="sms-*.xml")),
