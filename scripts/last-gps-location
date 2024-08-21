@@ -16,9 +16,8 @@ def main(delim: str, precision: int, fuzz: float) -> None:
     latest_loc = last(sorted(_extract_locations(latest), key=lambda loc: loc.dt))
     lat = round(latest_loc.lat, precision)
     lon = round(latest_loc.lon, precision)
-    if fuzz:
-        lat += round(random.uniform(-fuzz, fuzz), precision)
-        lon += round(random.uniform(-fuzz, fuzz), precision)
+    lat += round(random.uniform(-fuzz, fuzz), precision)
+    lon += round(random.uniform(-fuzz, fuzz), precision)
     if precision == 0:
         lat = int(lat)
         lon = int(lon)
