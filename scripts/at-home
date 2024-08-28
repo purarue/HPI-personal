@@ -20,7 +20,7 @@ def main(verbose: bool, distance: float):
     latest = last(sorted(inputs(), key=lambda loc: loc.stat().st_mtime))
     latest_loc = last(sorted(_extract_locations(latest), key=lambda loc: loc.dt))
 
-    # if this location is more than 15 minutes old, we cant compute, exit with code 2
+    # if this location is more than 15 minutes old, we can't compute, exit with code 2
     if datetime.now().astimezone() - latest_loc.dt.astimezone() > timedelta(minutes=15):
         if verbose:
             click.echo("location too old, not computing", err=True)
