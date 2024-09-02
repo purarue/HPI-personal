@@ -49,6 +49,9 @@ def main() -> None:
                 with open(output_filename, "wb") as f:
                     im.save(f)
 
+                # set modification time to when the message was sent
+                os.utime(output_filename, (msg.dt.timestamp(), msg.dt.timestamp()))
+
             st = os.stat(output_filename)
             size += st.st_size
             items += 1
