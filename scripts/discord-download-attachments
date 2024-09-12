@@ -7,6 +7,7 @@ Save my Discord Attachments (Images, Files) I've sent locally
 import os
 import time
 from pathlib import Path
+from datetime import datetime
 from urllib.parse import urlparse
 
 import click
@@ -15,7 +16,7 @@ from my.discord.data_export import messages
 
 
 default_pictures = Path(
-    os.environ.get("XDG_PICTURES_DIR", Path(os.environ["HOME"], "Pictures"))
+    os.environ.get("DISCORD_ATTACHMENTS_DIR", Path(os.environ["HOME"], "Files"))
 )
 
 
@@ -40,16 +41,16 @@ def url_filename(base: Path, urlparts: list[str]) -> Path:
     type=click.Path(file_okay=False, dir_okay=True, path_type=Path),
 )
 def main(discord_attachments_dir: Path) -> None:
-    urls: set[str] = set()
+    urls: dict[str, datetime] = dict()
     for msg in messages():
         if msg.attachments.strip():
             # split, in case there are multiple urls in the same message
             for url in msg.attachments.split():
-                urls.add(url)
+                urls[url] = msg.timestamp
 
     total_filesize = 0
 
-    for i, url in enumerate(sorted(urls)):
+    for i, (url, timestamp) in enumerate(urls.items()):
         # remove query params, split so we can validate stuff
         urlparts = urlparse(url).path.strip("/").split("/")
         assert len(urlparts) >= 4, f"{url} {len(urlparts)}"
@@ -83,6 +84,14 @@ def main(discord_attachments_dir: Path) -> None:
             assert filesize > 0, f"{target} filesize is 0"
 
             total_filesize += filesize
+
+        # make sure that the modification time on the image
+        # matches the timestamp in the message
+        if target.exists() and int(target.stat().st_mtime) != int(
+            timestamp.timestamp()
+        ):
+            click.echo(f"Updating mtime on {target} to {timestamp}", err=True)
+            os.utime(target, (timestamp.timestamp(), timestamp.timestamp()))
 
     total_filesize /= 1024**2
 
