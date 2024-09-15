@@ -56,7 +56,7 @@ def main() -> None:
             size += st.st_size
             items += 1
 
-    click.echo(f"Done, saved {items} images, using {round(size / 1024 / 1024, 3)} MB")
+    click.echo(f"Done, cache has {items} images, using {round(size / 1024 / 1024, 3)} MB")
 
 
 if __name__ == "__main__":
