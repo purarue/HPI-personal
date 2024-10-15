@@ -67,13 +67,16 @@ class MsgData(NamedTuple):
                 content += p.text + "\n"
         if not content:
             raise RuntimeError("No content in MMS")
+        # ~ is separator if it has multiple numbers from a MMS convo
+        is_multiple = "~" in msg.phone_number
+        cnumber = clean_number(phone_number)
         return cls(
             text=content.strip(),
-            key=msg.phone_number,  # often contains multiple numbers for MMS
+            key=msg.phone_number if is_multiple else cnumber,
             dt=msg.dt,
             who=msg.who,
             from_me=msg.from_me,
-            phone_number=clean_number(phone_number),
+            phone_number=cnumber,
         )
 
 
@@ -110,6 +113,7 @@ def display_message(message: MsgData, align: Literal["left", "right"] = "left") 
         width=console_width,
     )
     console.print(box)
+    click.echo()
 
 
 def latest_messages() -> list[HPIMessage | MMS]:
@@ -152,11 +156,7 @@ def pick_convo(convos: dict[str, list[MsgData]]) -> list[MsgData]:
 def main() -> None:
     convos = group_by_convo(latest_messages())
     for message in pick_convo(convos):
-        if message.from_me:
-            display_message(message)
-        else:
-            display_message(message, align="right")
-        click.echo()
+        display_message(message, align="left" if message.from_me else "right")
 
 
 if __name__ == "__main__":
