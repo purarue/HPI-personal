@@ -30,9 +30,7 @@ import click
 import my.google.takeout.parser
 import my.discord.data_export
 from my import smscalls
-from my.activitywatch import active_window
 from my.core import get_files
-from my.scramble.history import parsed_conf
 from my.core.query import attribute_func
 from my.core.query_range import select_range
 from tabulate import tabulate
@@ -110,9 +108,9 @@ class Export:
 
 
 EXPORTS: List[Export] = [
-    Export(
-        "TwistyTimer", FileResult.from_paths(parsed_conf["twistytimer"]), over_days=150
-    ),
+    # Export(
+    #     "TwistyTimer", FileResult.from_paths(parsed_conf["twistytimer"]), over_days=150
+    # ),
     # Export(
     #     "ActivityWatch Phone",
     #     active_window.history(
