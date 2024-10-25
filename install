@@ -26,7 +26,7 @@ upstream_module_dependencies() {
 module_deps() {
 	upstream_module_dependencies || return $?
 	pip_install 'git+https://github.com/karlicoss/arctee' || return $?
-	pip_install 'git+https://github.com/seanbreckenridge/plaintext_playlist_py' || return $?
+	pip_install 'git+https://github.com/purarue/plaintext_playlist_py' || return $?
 	hpi_module my.old_forums || return $?
 }
 

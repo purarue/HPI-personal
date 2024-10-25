@@ -64,7 +64,7 @@ def list_broken(mpv: Media) -> t.Iterator[str]:
 def clean_file(jf: Path) -> None:
     """
     Removes any disallowed keys from the metadata object, tracked by
-    https://github.com/seanbreckenridge/mpv-history-daemon
+    https://github.com/purarue/mpv-history-daemon
     """
     data = parse_json_file(jf)
     blobs = [data]

@@ -1,11 +1,11 @@
 """
 Manually Scraped Forum Posts from Random Forums I've used in the past
-https://github.com/seanbreckenridge/forum_parser
+https://github.com/purarue/forum_parser
 """
 
-REQUIRES = ["git+https://github.com/seanbreckenridge/old_forums"]
+REQUIRES = ["git+https://github.com/purarue/old_forums"]
 
-# see https://github.com/seanbreckenridge/dotfiles/blob/master/.config/my/my/config/__init__.py for an example
+# see https://github.com/purarue/dotfiles/blob/master/.config/my/my/config/__init__.py for an example
 from my.config import old_forums as user_config  # type: ignore[attr-defined]
 
 from my.core import Paths, dataclass
@@ -46,7 +46,7 @@ def forum_posts(from_paths: InputSource = forum_posts_inputs) -> Iterator[Post]:
 
 def achievements(from_paths: InputSource = achievement_inputs) -> Iterator[Achievement]:
     # quite personal, lets me specify CSS selectors as a JSON config file, see:
-    # https://github.com/seanbreckenridge/old_forums
+    # https://github.com/purarue/old_forums
     sels = AchievementSelector.load_from_blob(open(os.environ["OLD_FORUMS_SELECTORS"]))
     for path in from_paths():
         with path.open("r") as f:

@@ -10,7 +10,7 @@ def subpackages() -> Iterator[str]:
 
 
 def main() -> None:
-    pkg = "HPI-seanbreckenridge-personal"
+    pkg = "HPI-purarue-personal"
     setup(
         name=pkg,
         version="0.1.0",

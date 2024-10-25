@@ -23,7 +23,7 @@ def main(print_count: bool, count: int) -> None:
     Print paths which I've skipped more often than I listen to
 
     I may want to remove these from my playlists since I skip them all the time
-    https://github.com/seanbreckenridge/plaintext-playlist
+    https://github.com/purarue/plaintext-playlist
     """
     # TODO: make this cross platform by splitting off some part
     # checking if its in a list of music dirs

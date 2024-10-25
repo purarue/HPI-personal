@@ -3,6 +3,6 @@
 
 evry 1 week -backup_imessages && {
 	printlog "imessage:backing up history database..."
-	# https://github.com/seanbreckenridge/sqlite_backup
+	# https://github.com/purarue/sqlite_backup
 	sqlite_backup "${HOME}/Library/Messages/chat.db" "$(backup_to imessage)/$(date +'%s').sqlite" || send-error 'imessage: failed to backup database'
 }

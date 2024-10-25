@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# https://github.com/seanbreckenridge/cstimer-save-server
+# https://github.com/purarue/cstimer-save-server
 # https://sean.fish/d/cstimer?redirect
 evry 1 week -open-cstimer && openurl 'http://localhost:4633/'
 

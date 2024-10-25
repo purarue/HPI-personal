@@ -40,7 +40,7 @@ from my.config import location
 @dataclass
 class user_config(location.where_db):  # type: ignore
     """
-    see https://github.com/seanbreckenridge/dotfiles/blob/master/.config/my/my/config/__init__.py for an example of config
+    see https://github.com/purarue/dotfiles/blob/master/.config/my/my/config/__init__.py for an example of config
     """
 
     # accuracy for locations to be able to use them
@@ -403,7 +403,7 @@ def query(
                 import geopy.geocoders  # type: ignore[import]
 
                 nom = geopy.geocoders.Nominatim(
-                    user_agent="seanbreckenridge/HPI-personal/where_db",
+                    user_agent="purarue/HPI-personal/where_db",
                 )
                 info = nom.reverse((lat, lon), timeout=3)  # type: ignore
                 click.echo(str(info))

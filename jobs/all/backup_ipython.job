@@ -10,7 +10,7 @@ evry 2 days -backup_ipython && {
 		fi
 		printlog "ipython:${profile}:backing up history database..."
 		target_dir="${profile/profile_/ipython_}"
-		# https://github.com/seanbreckenridge/sqlite_backup
+		# https://github.com/purarue/sqlite_backup
 		sqlite_backup "${ipython_db}" "$(backup_to "$target_dir")/$(on_machine)-$(tstamp).sqlite" || send-error 'ipython: failed to backup database'
 	done
 }

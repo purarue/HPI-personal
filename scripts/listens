@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Print merged listens with a local datetime, using https://github.com/seanbreckenridge/my_feed
+Print merged listens with a local datetime, using https://github.com/purarue/my_feed
 """
 
 import sys
@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Iterator, cast
 
 import click
-from seanb.jsonfast import dumps
+from pura.jsonfast import dumps
 from my.core.query_range import select_range, RangeTuple
 from my_feed.sources.model import FeedItem
 from my_feed.transform import transform

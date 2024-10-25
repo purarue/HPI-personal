@@ -8,7 +8,7 @@ ON_OS="${ON_OS:=$(on_machine)}"
 # these are essentially game achievements (as images), so it makes for some nice lifelogging
 
 locate_screenshots() {
-	# if on windows, I set the $WHOME envvar, which is something like /mnt/c/Users/Sean
+	# if on windows, I set the $WHOME envvar, which is something like /mnt/c/Users/Name
 	HOMEDIR="${WHOME:-$HOME}"
 	RUNELITE_DIR="${HOMEDIR}/.runelite"
 	if [[ -e "${RUNELITE_DIR}" ]]; then

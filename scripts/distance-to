@@ -52,7 +52,7 @@ def main(
 ) -> None:
     """Get directions from one place to another."""
     geolocator = Nominatim(
-        user_agent=f"github.com/seanbreckenridge/HPI-personal/scripts/directions/{os.getlogin()}"
+        user_agent=f"github.com/purarue/HPI-personal/scripts/directions/{os.getlogin()}"
     )
     location = geolocator.geocode(destination)
 

@@ -31,7 +31,7 @@ def reverse_geocode(lat: float, lon: float) -> str:
     import geopy.geocoders  # type: ignore[import]
 
     nom = geopy.geocoders.Nominatim(
-        user_agent="seanbreckenridge/HPI-personal/location-tag",
+        user_agent="purarue/HPI-personal/location-tag",
     )
     info = nom.reverse((lat, lon), timeout=30)  # type: ignore[arg-type]
     json_data = info.raw

@@ -57,7 +57,7 @@ wq() {
 
 alias wq-now='_wq --use-location "$(last-gps-location)" now'
 
-# https://github.com/seanbreckenridge/mapscii-at
+# https://github.com/purarue/mapscii-at
 wq-mapscii() {
 	local data
 	data="$(where_db query "$*" -o plain)" || return $?
