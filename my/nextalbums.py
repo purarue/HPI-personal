@@ -1,7 +1,7 @@
 """
 Parses albums from my google sheet
 https://github.com/purarue/albums
-https://sean.fish/s/albums
+https://purarue.xyz/s/albums
 """
 
 # see https://github.com/purarue/dotfiles/blob/master/.config/my/my/config/__init__.py for an example

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # https://github.com/purarue/cstimer-save-server
-# https://sean.fish/d/cstimer?redirect
+# https://purarue.xyz/d/cstimer?redirect
 evry 1 week -open-cstimer && openurl 'http://localhost:4633/'
 
 # open the api export page, uses my logged in session and downloads the file

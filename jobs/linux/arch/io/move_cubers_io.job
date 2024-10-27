@@ -6,7 +6,7 @@ cubers_io_files() {
 
 # run this before exporting, so it doesn't move a partially downloaded
 # file from downloads, it'll back it up next time I run the script
-# (this is called in https://sean.fish/d/housekeeping?dark)
+# (this is called in https://purarue.xyz/d/housekeeping?dark)
 evry 10 minutes -move-cubers-io && {
 	to_dir="$(backup_to 'cubing/cubers_io')"
 	cubers_io_files "$@"

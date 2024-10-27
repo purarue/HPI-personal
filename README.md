@@ -1,7 +1,7 @@
 These are personal modules and some of my personal scripts/jobs to save/backup data
 
 - `my.old_forums`, parses random forum posts and achievements from sites I used to use in the past, see [`old_forums`](https://github.com/purarue/old_forums)
-- `my.nextalbums`, grabbing when I listened to music albums/my ratings using my [giant spreadsheet](https://sean.fish/s/albums). Handled by [`nextalbums export`](https://github.com/purarue/albums)
+- `my.nextalbums`, grabbing when I listened to music albums/my ratings using my [giant spreadsheet](https://purarue.xyz/s/albums). Handled by [`nextalbums export`](https://github.com/purarue/albums)
 - `my.location.where_db` acts as a sort of entrypoint to consume my location data -- lets me query where I was on a day, reverse geocode (using [Nominatim](https://nominatim.openstreetmap.org/ui/about.html)) lookup/query around a particular time
 
 The most important parts of this are the `all.py` files, which override the default `all.py` in `HPI` to use my data sources:
