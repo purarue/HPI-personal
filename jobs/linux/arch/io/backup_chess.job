@@ -11,10 +11,8 @@ chess_backup() {
 	local FILEPART
 	FILEPART="${1?:Must provide filepart}"
 	BACKUP_DIR="$(backup_to chess)"
-	for chess_site in chessdotcom lichess; do
-		printlog "chess: Running ${chess_site} export..."
-		arctee -r 3 "${BACKUP_DIR}/${chess_site}${FILEPART}.json" -- python3 -m chess_export "${chess_site}" export seanbreckenridge || send-error "chessdotcom export: failed to backup ${chess_site} games"
-	done
+	printlog "chess: Running chessdotcom export..."
+	arctee -r 3 "${BACKUP_DIR}/chessdotcom${FILEPART}.json" -- python3 -m chess_export chessdotcom export purarue || send-error "chessdotcom export: failed to backup chessdotcom games"
 	json-compress "${BACKUP_DIR}/"*.json
 }
 
