@@ -29,8 +29,9 @@ from typing import (
 )
 from functools import cache
 from datetime import datetime, date, timedelta
+from dataclasses import dataclass
 
-from my.core import make_config, PathIsh, dataclass
+from my.core import make_config, PathIsh
 from my.core.warnings import medium
 from my.location.common import Location, LatLon
 
