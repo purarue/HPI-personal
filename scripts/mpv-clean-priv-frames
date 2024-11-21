@@ -81,7 +81,7 @@ def clean_file(jf: Path) -> None:
                     for rk in removed_keys:
                         metadata.pop(rk)
                     print(f"Removed {removed_keys}, fixed {metadata}")
-    # theres a possibility this is a gz file, so test for that
+    # there's a possibility this is a gz file, so test for that
     # and just write back to the JSON file
     #
     # then, if it was a gz file, use gzip -9 {file} to compress it

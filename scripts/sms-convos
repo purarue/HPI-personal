@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Parses my SMS messages, lets me pick one or more conversations (incase multiple numbers are the same person)
+Parses my SMS messages, lets me pick one or more conversations (in case multiple numbers are the same person)
 and then displays the messages in a chat-like format, alternating colors for me/other person
 """
 
