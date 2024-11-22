@@ -9,6 +9,7 @@ local data is over 28 days or some custom day count
 
 from __future__ import annotations
 
+import os
 import json
 from time import time
 from pathlib import Path
@@ -27,6 +28,8 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 import click
+
+from my.config import mal  # type: ignore
 import my.google.takeout.parser
 import my.discord.data_export
 from my import smscalls
@@ -123,6 +126,13 @@ EXPORTS: List[Export] = [
         "SMS Export",
         FileResult.from_paths(get_files(smscalls.config.export_path, glob="sms-*.xml")),
         over_days=14,
+    ),
+    Export(
+        "MAL",
+        FileResult.from_paths(
+            (Path(mal.export.export_path) / os.environ["MAL_USERNAME"]).rglob("*.xml")
+        ),
+        over_days=1,
     ),
     Export("Discord Data Export", my.discord.data_export.messages, over_days=150),
     Export("Google Takeout", my.google.takeout.parser.events, over_days=150),
