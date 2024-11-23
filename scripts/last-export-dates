@@ -132,7 +132,7 @@ EXPORTS: List[Export] = [
         FileResult.from_paths(
             (Path(mal.export.export_path) / os.environ["MAL_USERNAME"]).rglob("*.xml")
         ),
-        over_days=1,
+        over_days=3,
     ),
     Export("Discord Data Export", my.discord.data_export.messages, over_days=150),
     Export("Google Takeout", my.google.takeout.parser.events, over_days=150),
