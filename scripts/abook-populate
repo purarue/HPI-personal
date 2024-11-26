@@ -44,6 +44,8 @@ def from_mail(ab: AbookFile) -> int:
 
     emails = set(list(commits.emails or []))
 
+    # only filter to people I've actually sent emails to,
+    # reviewing every single email would take forever
     added = 0
     for mm in mail():
         for _, from_email in mm.from_:
