@@ -1,0 +1,238 @@
+#!/usr/bin/env python3
+
+"""
+Parses SMS/Mail and adds prompts me to add items to my addressbook
+"""
+
+from __future__ import annotations
+
+import os
+import json
+from pathlib import Path
+from typing import Counter, Literal, NamedTuple, get_args
+
+import click
+import phonenumbers
+
+from abook_parser.parser import AbookFile
+
+
+pth = os.environ["ABOOK_FILE"]
+already_prompted_file = Path(os.environ["XDG_DOCUMENTS_DIR"]) / ".abook_prompted.json"
+
+if already_prompted_file.exists():
+    already_prompted: set[str] = set(json.loads(already_prompted_file.read_text()))
+else:
+    already_prompted = set()
+
+
+def write_already_prompted_file() -> None:
+    already_prompted_file.write_text(json.dumps(sorted(already_prompted), indent=4))
+
+
+def from_mail(ab: AbookFile) -> int:
+    from my.mail.all import mail
+    from my.config import commits
+
+    already_in_addressbook: set[str] = set()
+    for vv in ab.items.values():
+        if "email" in vv:
+            for em in vv["email"].split(","):
+                email = em.strip()
+                if email:
+                    already_in_addressbook.add(email)
+
+    emails = set(list(commits.emails or []))
+
+    added = 0
+    for mm in mail():
+        for _, from_email in mm.from_:
+            if from_email in emails:
+                for to_who, to_email in mm.to:
+                    if (
+                        to_email.strip()
+                        and to_email not in emails
+                        and to_email not in already_prompted
+                        and to_email not in already_in_addressbook
+                        and "reply.github.com" not in to_email
+                        and "unsubscribe" not in to_email
+                    ):
+                        click.echo(f"'{to_who}' '{to_email}'")
+                        if click.confirm("Add to addressbook?", default=False):
+                            data = {
+                                "email": to_email,
+                                "name": to_who.strip()
+                                or click.prompt("Name", type=str),
+                            }
+                            ab.add_contact(data)
+                            ab.write()
+                            already_in_addressbook.add(to_email)
+                            added += 1
+                        already_prompted.add(to_email)
+                        write_already_prompted_file()
+
+    return added
+
+
+class PhoneNumberHashable(phonenumbers.PhoneNumber):
+    def __hash__(self):
+        return hash(str(self))
+
+    @classmethod
+    def parse(cls, /, text: str, replaced_code: bool = False) -> PhoneNumberHashable:
+        phone_number = cls()
+        try:
+            parsed = phonenumbers.parse(text, numobj=phone_number)
+        except phonenumbers.phonenumberutil.NumberParseException as err:
+            if replaced_code:
+                raise ValueError(f"Replaced code and still failed; {text}") from err
+            if (
+                err.error_type
+                == phonenumbers.phonenumberutil.NumberParseException.INVALID_COUNTRY_CODE
+            ):
+                return cls.parse(f"+1{text}", replaced_code=True)
+        else:
+            assert isinstance(parsed, PhoneNumberHashable)
+            return parsed
+
+        raise ValueError(f"Failed to parse {text}")
+
+
+class Who(NamedTuple):
+    who: str
+
+
+def from_sms(ab: AbookFile) -> int:
+    from my.smscalls import calls, messages, mms, Message, Call, MMS
+
+    already_in_addressbook: set[PhoneNumberHashable] = set()
+    for val in ab.items.values():
+        if "mobile" in val:
+            already_in_addressbook.add(PhoneNumberHashable.parse(val["mobile"]))
+
+    mapping: dict[PhoneNumberHashable, Message | Call | MMS | Who] = {}
+
+    counter = Counter()
+    for c in calls():
+        if isinstance(c, Exception):
+            continue
+        if not c.from_me:
+            continue
+        try:
+            mobile = PhoneNumberHashable.parse(c.phone_number)
+        except ValueError as e:
+            click.echo(f"Failed to parse {c.phone_number}: {e}")
+            continue
+        if mobile in already_in_addressbook:
+            continue
+        counter[mobile] += 1
+        if mobile not in mapping:
+            mapping[mobile] = c
+        else:
+            if c.who is not None and mapping[mobile].who is None:
+                mapping[mobile] = c
+
+    for m in messages():
+        if isinstance(m, Exception):
+            continue
+        if not m.from_me:
+            continue
+        try:
+            mobile = PhoneNumberHashable.parse(m.phone_number)
+        except ValueError as e:
+            click.echo(f"Failed to parse {m.phone_number}: {e}")
+            continue
+        if mobile in already_in_addressbook:
+            continue
+        counter[mobile] += 1
+        if mobile not in mapping:
+            mapping[mobile] = m
+        else:
+            if m.who is not None and mapping[mobile].who is None:
+                mapping[mobile] = m
+
+    for mm in mms():
+        if isinstance(mm, Exception):
+            continue
+        if not mm.from_me:
+            continue
+        if mm.who is None:
+            continue
+        numbers: tuple[str, ...] = (mm.phone_number,)
+        people: tuple[str, ...] = (mm.who,)
+        if "~" in mm.phone_number:
+            numbers = tuple(num for num, type_ in mm.addresses if type_ != 137)
+            people = tuple([p.strip() for p in mm.who.split(",")])
+            if len(numbers) != len(people):
+                click.echo(f"Can't map {numbers} to {people}")
+                continue
+        for who, num in zip(people, numbers, strict=True):
+            try:
+                mobile = PhoneNumberHashable.parse(num)
+            except ValueError as e:
+                click.echo(f"Failed to parse {num}: {e}")
+                continue
+            if mobile in already_in_addressbook:
+                continue
+            counter[mobile] += 1
+            if mobile not in mapping:
+                mapping[mobile] = Who(who=who)
+            else:
+                if who is not None and mapping[mobile].who is None:
+                    mapping[mobile] = Who(who=who)
+
+    added = 0
+    for person, interactions in counter.items():
+        if interactions <= 1:
+            continue
+        info = mapping[person]
+        if info.who is None:
+            continue
+        formatted = phonenumbers.format_number(
+            person, phonenumbers.PhoneNumberFormat.INTERNATIONAL
+        )
+        msg = f"{info.who}, {person}"
+        if formatted in already_prompted:
+            click.echo(f"Ignoring: {msg}")
+            continue
+        click.echo(msg)
+        if click.confirm("Add to addressbook?", default=True):
+            data = {
+                "name": info.who,
+                "mobile": formatted,
+            }
+            ab.add_contact(data)
+            ab.write()
+            added += 1
+        already_prompted.add(formatted)
+        write_already_prompted_file()
+
+    return added
+
+
+PromptType = Literal["mail", "sms"]
+
+
+@click.command()
+@click.option(
+    "-f", "--from", "from_", type=click.Choice(get_args(PromptType)), required=True
+)
+def main(from_: PromptType) -> None:
+    ab = AbookFile(path=pth)
+    try:
+        match from_:
+            case "mail":
+                from_mail(ab)
+            case "sms":
+                from_sms(ab)
+            case _:
+                raise ValueError(from_)
+    except KeyboardInterrupt:
+        pass
+
+    write_already_prompted_file()
+    ab.write()
+
+
+if __name__ == "__main__":
+    main()
