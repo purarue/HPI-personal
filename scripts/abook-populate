@@ -35,11 +35,10 @@ def from_mail(ab: AbookFile) -> int:
     from my.config import commits
 
     already_in_addressbook: set[str] = set()
-    for vv in ab.items.values():
-        if "email" in vv:
-            for em in vv["email"].split(","):
-                email = em.strip()
-                if email:
+    for person in ab.contacts:
+        if "email" in person:
+            for em in person["email"].split(","):
+                if email := em.strip():
                     already_in_addressbook.add(email)
 
     emails = set(list(commits.emails or []))
@@ -108,9 +107,9 @@ def from_sms(ab: AbookFile) -> int:
     from my.smscalls import calls, messages, mms, Message, Call, MMS
 
     already_in_addressbook: set[PhoneNumberHashable] = set()
-    for val in ab.items.values():
-        if "mobile" in val:
-            already_in_addressbook.add(PhoneNumberHashable.parse(val["mobile"]))
+    for person in ab.contacts:
+        if "mobile" in person:
+            already_in_addressbook.add(PhoneNumberHashable.parse(person["mobile"]))
 
     mapping: dict[PhoneNumberHashable, Message | Call | MMS | Who] = {}
 
