@@ -26,9 +26,10 @@ from my.core import get_files, Stats
 
 # should only ever be one dump, the .job overwrites the file
 def input() -> Path:
-    dump = list(get_files(config.export_path))
-    assert len(dump) == 1, "Expected one JSON file as input"
-    return dump[0]
+    dumps = list(get_files(config.export_path))
+    dumps.sort(key=lambda p: p.stat().st_mtime)
+    latest = dumps[-1]
+    return latest
 
 
 def _albums() -> Iterator[Album]:
