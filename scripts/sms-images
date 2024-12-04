@@ -3,10 +3,8 @@
 import os
 import re
 import base64
-from io import BytesIO
 
 from my.smscalls import mms
-from PIL import Image
 
 import click
 
@@ -21,6 +19,15 @@ cache_dir = os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache"))
 app_cache_dir = os.path.join(cache_dir, "sms-images")
 
 
+ALLOWED_FILETYPES = {
+    "video/3gpp": ".3gpp",
+    "image/gif": ".gif",
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "video/mp4": ".mp4",
+}
+
+
 @click.command()
 def main() -> None:
     size = 0
@@ -33,21 +40,21 @@ def main() -> None:
         for part in msg.parts:
             if part.data is None:
                 continue
-            if part.content_type not in ("image/png", "image/jpeg"):
+            if part.content_type not in ALLOWED_FILETYPES:
                 continue
-            im = Image.open(BytesIO(base64.b64decode(part.data)))
-            extension = "png" if part.content_type == "image/png" else "jpg"
+            data = base64.b64decode(part.data)
+            extension = ALLOWED_FILETYPES[part.content_type]
             # folder with the phone_number (sort of like a hash)
             output_filedir = os.path.join(app_cache_dir, slugify(msg.phone_number))
             os.makedirs(output_filedir, exist_ok=True)
             # date -> filename . extension
             output_filename = os.path.join(
-                output_filedir, f"{datestr}-{part.filename}.{extension}"
+                output_filedir, f"{datestr}-{part.filename}{extension}"
             )
             if not os.path.exists(output_filename):
                 click.echo(f"Saving {output_filename}")
                 with open(output_filename, "wb") as f:
-                    im.save(f)
+                    f.write(data)
 
                 # set modification time to when the message was sent
                 os.utime(output_filename, (msg.dt.timestamp(), msg.dt.timestamp()))
