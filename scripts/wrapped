@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+# summary of my music listening for the year
+
+from typing import Iterator
+from datetime import datetime, date
+import subprocess
+import json
+from dataclasses import dataclass
+
+from collections import defaultdict
+from tabulate import tabulate
+
+import click
+
+current_day = int(date.today().strftime("%j"))
+
+
+@dataclass
+class Listen:
+    when: datetime
+    title: str
+    artist: str
+    album: str
+    index: int = 0
+
+
+def remove_featuring_artists(s: str) -> str:
+    tokens = s.split()
+    for sep in ["featuring.", "featuring", "ft.", "ft", "feat.", "feat"]:
+        if sep in tokens:
+            return " ".join(tokens[: tokens.index(sep)])
+    return s
+
+
+def listens() -> Iterator[Listen]:
+    for line in subprocess.check_output(
+        ["listens", "--json", "--recent", f"{current_day}d"]
+    ).splitlines():
+        data = json.loads(line)
+        yield Listen(
+            when=datetime.fromisoformat(data["when"]),
+            title=remove_featuring_artists(data["title"]),
+            artist=data["artist"],
+            album=data["album"],
+        )
+
+
+def most_common(
+    data: list[Listen], attr: str, top: int = 5, unique_artists: bool = False
+) -> list[tuple[Listen, int]]:
+    counts: dict[str, int] = defaultdict(int)
+    mapping_to_value: dict[str, Listen] = {}
+    for d in data:
+        val = getattr(d, attr)
+        assert isinstance(val, str)
+        lowered = val.casefold()
+        counts[lowered] += 1
+        mapping_to_value[lowered] = d
+
+    sorted_vals = {
+        k: v for k, v in sorted(counts.items(), key=lambda item: item[1], reverse=True)
+    }
+
+    # only add one song per artist in my top songs
+    if unique_artists:
+        already_used: set[str] = set()
+        new_vals = {}
+        for k, v in sorted_vals.items():
+            listen = mapping_to_value[k]
+            if listen.artist in already_used:
+                continue
+            new_vals[k] = v
+            already_used.add(listen.artist)
+
+        sorted_vals = new_vals
+
+    return [(mapping_to_value[name], count) for name, count in sorted_vals.items()][
+        :top
+    ]
+
+
+@click.command()
+@click.option("-c", "--count", type=int, default=5)
+@click.option(
+    "-u", "--unique-artists", is_flag=True, help="Show one song per artist in top songs"
+)
+def main(count: int, unique_artists: bool) -> None:
+    data = list(listens())
+    most_common_artists = most_common(data, "artist", top=count)
+    most_common_songs = most_common(
+        data, "title", top=count, unique_artists=unique_artists
+    )
+
+    artist_table = [
+        ["Artist", "Count"],
+        *[[d.artist, c] for d, c in most_common_artists],
+    ]
+    song_table = [
+        ["Song", "Count"],
+        *[[f"{d.title} - {d.artist}", c] for d, c in most_common_songs],
+    ]
+
+    artist_lines = tabulate(artist_table, tablefmt="outline", headers="firstrow")
+    song_lines = tabulate(song_table, tablefmt="outline", headers="firstrow")
+
+    for al, sl in zip(artist_lines.splitlines(), song_lines.splitlines()):
+        print(f"{al}{sl}")
+
+
+if __name__ == "__main__":
+    main()
