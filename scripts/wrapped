@@ -51,6 +51,9 @@ def most_common(
     counts: dict[str, int] = defaultdict(int)
     mapping_to_value: dict[str, Listen] = {}
     for d in data:
+        # BUG: this might be wrong if we have title clashes, should
+        # probably just make attr a lambda function and use
+        # title - artist as a key
         val = getattr(d, attr)
         assert isinstance(val, str)
         lowered = val.casefold()
