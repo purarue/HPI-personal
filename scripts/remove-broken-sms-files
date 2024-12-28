@@ -9,8 +9,10 @@ creates partially written xml files
 import os
 
 import click
+import lxml.etree as etree
 from logzero import logger  # type: ignore[import]
-from my.smscalls import config, get_files, etree
+from my.core.common import get_files
+from my.smscalls import config, _parse_xml
 
 
 @click.command(help=__doc__)
@@ -27,7 +29,7 @@ def main(verbose: bool) -> None:
         if verbose:
             logger.debug(f"Checking {xml_file}")
         try:
-            etree.parse(xml_file)
+            _parse_xml(xml_file)
         except etree.XMLSyntaxError as e:
             logger.error(f"Error parsing {xml_file}: {e}", exc_info=True)
             click.echo(f"Removing {xml_file}", err=True)
