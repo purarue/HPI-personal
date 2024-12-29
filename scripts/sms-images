@@ -12,7 +12,7 @@ import click
 def slugify(s: str) -> str:
     s = s.lower()
     s = re.sub("[~,+]", "_", s)
-    return s
+    return s[:128]
 
 
 cache_dir = os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache"))
