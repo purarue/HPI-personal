@@ -1,8 +1,25 @@
 #!/usr/bin/env python3
 
 import click
-from typing import Sequence
+from typing import Sequence, NamedTuple, cast, TYPE_CHECKING
+from datetime import datetime
 from ttally.__main__ import event
+
+
+# stub copy for types
+if TYPE_CHECKING:
+
+    class Event(NamedTuple):
+        event_type: str
+        when: datetime
+        description: str
+        score: int | None
+        comments: str | None
+
+else:
+
+    class Event:
+        pass
 
 
 @click.command()
@@ -10,9 +27,10 @@ from ttally.__main__ import event
 @click.option("--include-comments", is_flag=True, default=False)
 @click.option("--filter-type", type=str, default=None, multiple=True)
 def main(sort_by: str, include_comments: bool, filter_type: Sequence[str]) -> None:
+    data: list[Event] = cast(list[Event], list(event()))
     for ev in sorted(
-        event(),
-        key=lambda x: x.when if sort_by == "when" else x.score,
+        data,
+        key=lambda x: x.when if sort_by == "when" else x.score or 0,
         reverse=sort_by == "score",
     ):
         if filter_type and ev.event_type not in filter_type:
