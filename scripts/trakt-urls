@@ -42,8 +42,8 @@ def main(trakt_username: Optional[str]) -> None:
     files.sort(key=lambda f: f.stat().st_size)
 
     emitted: Set[str] = set()
-    for f in files:
-        _print_urls(parse_file(f), emitted)
+    if files:
+        _print_urls(parse_file(files[-1]), emitted)
 
     # fetch first page of history from trakt
     if trakt_username is not None:
