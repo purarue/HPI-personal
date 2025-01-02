@@ -165,7 +165,7 @@ def from_sms(ab: AbookFile) -> int:
             numbers = tuple(num for num, type_ in mm.addresses if type_ != 137)
             people = tuple([p.strip() for p in mm.who.split(",")])
             if len(numbers) != len(people):
-                click.echo(f"Can't map {numbers} to {people}")
+                # click.echo(f"Can't map {numbers} to {people}")
                 continue
         for who, num in zip(people, numbers, strict=True):
             try:
