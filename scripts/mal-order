@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import Optional, Callable, Any, Dict, Iterator
+from typing import Literal, Optional, Callable, Any, Dict, Iterator, get_args
 
 import click
 
@@ -24,8 +24,10 @@ def seconds_left(a: AnimeData) -> Optional[int]:
     return sl
 
 
+SortType = Literal["seconds_left", "score", "end_date", "popularity"]
+
 # define mapping/sort functions for each query
-funcs: Dict[str, Any] = {
+funcs: Dict[SortType, Any] = {
     "seconds_left": (
         lambda a: seconds_left(a) is not None,
         lambda a: seconds_left(a),
@@ -40,6 +42,11 @@ funcs: Dict[str, Any] = {
         lambda a: a.APIList.end_date is not None,
         lambda a: a.APIList.end_date,
         lambda a: str(a.APIList.end_date),
+    ),
+    "popularity": (
+        lambda a: a.APIList.popularity is not None and a.APIList.popularity > 0,
+        lambda a: a.APIList.popularity,
+        lambda a: str(a.APIList.popularity),
     ),
 }
 
@@ -86,7 +93,7 @@ def sort_and_display(
     "-s",
     "--sort-by",
     default="seconds_left",
-    type=click.Choice(["seconds_left", "score", "end_date"]),
+    type=click.Choice(get_args(SortType)),
     help="query to order by",
     show_default=True,
 )
@@ -99,7 +106,7 @@ def sort_and_display(
     help="how to display output",
 )
 def main(
-    mal_username: str, status: str, sort_by: str, reverse: bool, output: str
+    mal_username: str, status: str, sort_by: SortType, reverse: bool, output: str
 ) -> None:
     """
     Displays my MAL list sorted by some custom query
