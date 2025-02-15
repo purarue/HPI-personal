@@ -32,16 +32,13 @@ import click
     default=0,
 )
 @click.argument("HISTORY_COUNT", type=int, default=5)
-@click.argument("EPISODE_LIMIT", type=int, default=1)
 def main(
     username: str,
     export: bool,
     history: bool,
-    episode_limit: int,
     history_count: int,
     manga_history: int,
 ) -> None:
-    os.environ["MALEXPORT_EPISODE_LIMIT"] = str(episode_limit)
 
     from malexport.list_type import ListType
     from malexport.exporter.account import Account
