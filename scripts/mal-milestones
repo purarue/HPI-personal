@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+
+from datetime import timedelta
+import os
+from my.mal.export import anime, AnimeData
+
+import click
+
+
+def not_a_short(a: AnimeData) -> bool:
+    rt = a.runtime
+    if rt is None:
+        return True
+    else:
+        return rt > timedelta(minutes=30).total_seconds()
+
+
+@click.command()
+@click.option("--shorts/--no-shorts", default=True)
+def main(shorts: bool) -> None:
+    items = [
+        a
+        for a in anime()
+        if a.XMLData is not None
+        and a.username == os.environ["MAL_USERNAME"]
+        and a.XMLData.status.lower() == "completed"
+        and a.XMLData.finish_date is not None
+    ]
+    if shorts is False:
+        items = list(filter(not_a_short, items))
+    items.sort(key=lambda a: a.XMLData.finish_date or 0)
+    for i, a in enumerate(items, 1):
+        # if under 1000, milestones are every 100. if over, they're every 500
+        milestone = 100 if i < 1000 else 500
+        if i % milestone == 0:
+            print(i, a.XMLData.id, a.XMLData.title)
+
+
+if __name__ == "__main__":
+    main()
