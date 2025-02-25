@@ -2,12 +2,12 @@
 
 evry 12 hours -bleanser-zsh && {
 	zsh_files="$(find ~/data/zsh_history -type f | wc -l)"
-	((zsh_files > 30)) && bleanser-runall -t size zsh
+	((zsh_files > 25)) && bleanser-runall -t size zsh
 }
 
 evry 1 hours -bleanser-smscalls && {
 	sms_size="$(find ~/data/SMSBackups -iname '*sms*' -type f | wc -l)"
-	((sms_size > 10)) && bleanser-runall -t size smscalls
+	((sms_size > 6)) && bleanser-runall -t size smscalls
 }
 
 evry 1 hour -prune-cache-dir && rm -vrf ~/.cache/removed
