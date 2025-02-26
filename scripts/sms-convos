@@ -131,7 +131,7 @@ def pick_convo(convos: dict[str, list[MsgData]]) -> list[MsgData]:
     fzf = pyfzf.FzfPrompt(default_options="--multi --cycle --reverse")
     mem = {}  # prompt to message mapping
     for phone_number, msgs in sorted(
-        convos.items(), key=lambda x: len(x[1]), reverse=True
+        convos.items(), key=lambda x: x[1][-1].dt, reverse=True
     ):
         if not msgs:
             continue
