@@ -16,12 +16,14 @@ def main(delim: str, precision: int, fuzz: float) -> None:
     latest_loc = last(sorted(_extract_locations(latest), key=lambda loc: loc.dt))
     lat = round(latest_loc.lat, precision)
     lon = round(latest_loc.lon, precision)
-    lat += round(random.uniform(-fuzz, fuzz), precision)
-    lon += round(random.uniform(-fuzz, fuzz), precision)
+    lat += random.uniform(-fuzz, fuzz)
+    lon += random.uniform(-fuzz, fuzz)
     if precision == 0:
         lat = int(lat)
         lon = int(lon)
-    print(f"{lat}{delim}{lon}")
+        print(f"{lat}{delim}{lon}")
+    else:
+        print(f"{lat:.{precision}f}{delim}{lon:.{precision}f}")
 
 
 if __name__ == "__main__":
