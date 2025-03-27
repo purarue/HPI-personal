@@ -50,9 +50,7 @@ def main(trakt_username: Optional[str]) -> None:
         from traktexport.export import _trakt_paginate
 
         try:
-            data = list(
-                _trakt_paginate(f"users/{trakt_username}/history", request_pages=1)
-            )
+            data = list(_trakt_paginate(f"users/{trakt_username}/history", pages=1))
         except Exception as e:
             click.echo(f"Error fetching history: {e}", err=True)
             return

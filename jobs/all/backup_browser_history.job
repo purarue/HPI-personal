@@ -18,4 +18,5 @@ evry 1 day -backup_browser_history && {
 	printlog "browserexport:backing up shared history databases..."
 	save_database firefox || return $?
 	save_database chrome || return $?
+	save_database floorp || return $?
 }
