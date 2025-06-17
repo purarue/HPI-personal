@@ -194,7 +194,7 @@ def from_sms(ab: AbookFile) -> int:
         )
         msg = f"{info.who}, {person}"
         if formatted in already_prompted:
-            click.echo(f"Ignoring: {msg}")
+            # click.echo(f"Ignoring: {msg}")
             continue
         click.echo(msg)
         if click.confirm("Add to addressbook?", default=True):
