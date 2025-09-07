@@ -1,6 +1,16 @@
 [project]
+name = "HPI-purarue-personal"
+version = "0.0.1"
+description = "Personal HPI modules"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+
 [[project.authors]]
-name = ""
+name = "purarue"
+
+[project.urls]
+Homepage = "https://github.com/purarue/HPI-personal"
 
 [build-system]
 requires = ["setuptools"]
@@ -20,9 +30,11 @@ warn_redundant_casts = "True"
 warn_return_any = "True"
 warn_unreachable = "True"
 
-[tool.pytest.ini_options]
-addopts = []
+[options.package_data]
+my = "py.typed"
 
 [tool.setuptools.packages.find]
-include = []
+where = ["."]
+include = ["my*"]
 exclude = []
+namespaces = true
