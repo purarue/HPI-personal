@@ -18,7 +18,8 @@ class config(user_config):
 
 
 from pathlib import Path
-from typing import Iterator, Callable
+from typing import Callable
+from collections.abc import Iterator
 
 from nextalbums.export import Album, read_dump
 from my.core import get_files, Stats
@@ -78,9 +79,9 @@ def __getattr__(name: str) -> Callable[[], Iterator[Album]]:
     # i.e. this can be with hpi query like:
     #
     # hpi query nextalbums.genre_rock_reason_fantano
-    filters = set(["genre_", "reason_"])
+    filters = {"genre_", "reason_"}
     filter_data = defaultdict(list)
-    while any((name.startswith(f) for f in filters)):
+    while any(name.startswith(f) for f in filters):
         parts = name.split("_")
         filter_data[parts[0]].append(parts[1])
         name = "_".join(parts[2:])
@@ -95,13 +96,13 @@ def __getattr__(name: str) -> Callable[[], Iterator[Album]]:
 
         for genre_filter in filter_data.get("genre", []):
             itr = filter(
-                lambda a: any((genre_filter in g.lower() for g in a.genres + a.styles)),
+                lambda a: any(genre_filter in g.lower() for g in a.genres + a.styles),
                 itr,
             )
 
         for reason_filter in filter_data.get("reason", []):
             itr = filter(
-                lambda a: any((reason_filter in r.lower() for r in a.reasons)),
+                lambda a: any(reason_filter in r.lower() for r in a.reasons),
                 itr,
             )
 

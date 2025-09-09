@@ -4,7 +4,7 @@ Combines IPs from data exports which include IP addresses
 
 REQUIRES = ["ipgeocache"]
 
-from typing import Iterator
+from collections.abc import Iterator
 
 from my.ip.common import IP
 from my.core import make_logger, Stats

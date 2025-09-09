@@ -18,15 +18,10 @@ import time
 from collections import defaultdict
 from pathlib import Path
 from typing import (
-    Iterator,
     Optional,
-    List,
-    Tuple,
-    Mapping,
     NamedTuple,
-    Iterable,
-    Sequence,
 )
+from collections.abc import Iterator, Mapping, Iterable, Sequence
 from functools import cache
 from datetime import datetime, date, timedelta
 from dataclasses import dataclass
@@ -76,7 +71,7 @@ config = make_config(user_config)
 fts = datetime.fromtimestamp  # 'from timestamp'
 
 # just for loading/querying the database
-ModelRaw = Tuple[float, float, int]
+ModelRaw = tuple[float, float, int]
 
 
 class Model(NamedTuple):
@@ -104,7 +99,7 @@ def generate_from_locations() -> Iterator[ModelDt]:
         config.new_point_distance if config.new_point_distance is not None else 100
     )
 
-    locs: List[Location] = [
+    locs: list[Location] = [
         loc
         for loc in location_sources()
         if loc.accuracy is not None and loc.accuracy < use_accuracy
@@ -131,11 +126,11 @@ def generate_from_locations() -> Iterator[ModelDt]:
 
 
 @cache
-def _homes(reverse: bool = False) -> List[Tuple[datetime, LatLon]]:
+def _homes(reverse: bool = False) -> list[tuple[datetime, LatLon]]:
     """cached home data"""
     from my.location.home import config as home_config
 
-    hist: List[Tuple[datetime, LatLon]] = list(home_config._history)
+    hist: list[tuple[datetime, LatLon]] = list(home_config._history)
     hist.sort(key=lambda data: data[0], reverse=reverse)
     return hist
 
@@ -165,7 +160,7 @@ def generate() -> Iterator[ModelDt]:
 
     # relate each item to a day, and add that to a list
     # if none present on that day, default to my home location
-    loc_on_day: Mapping[date, List[ModelDt]] = defaultdict(list)
+    loc_on_day: Mapping[date, list[ModelDt]] = defaultdict(list)
     for loc in generate_from_locations():
         _, _, dt = loc
         loc_on_day[dt.date()].append(loc)
@@ -231,7 +226,7 @@ def gen() -> Iterator[ModelRaw]:
         yield loc.lat, loc.lon, int(loc.dt.timestamp())
 
 
-Database = List[ModelRaw]
+Database = list[ModelRaw]
 
 
 def _db() -> Optional[Path]:
@@ -248,7 +243,7 @@ def locations(db_location: Optional[Path] = None) -> Iterator[ModelRaw]:
             "No database found -- set one on your where_db config as 'database_location'"
         )
         return
-    with open(db_location, "r") as f:
+    with open(db_location) as f:
         data = json.load(f)
         assert isinstance(data, list)
     yield from iter(data)
@@ -290,7 +285,7 @@ def _parse_timedelta(
 
 def _parse_location(
     ctx: click.Context, param: click.Argument, value: Optional[str]
-) -> Optional[Tuple[float, float]]:
+) -> Optional[tuple[float, float]]:
     if value is None:
         return None
     match value.strip().split(","):
@@ -371,7 +366,7 @@ def main() -> None:
 )
 def query(
     db: Path,
-    use_location: Optional[Tuple[float, float]],
+    use_location: Optional[tuple[float, float]],
     output: Sequence[str],
     around: Optional[timedelta],
     date: Iterable[int],
@@ -384,7 +379,7 @@ def query(
     # if providing a location, default to now
     if use_location is not None:
         dts = [int(time.time())]
-    res: List[ModelRaw]
+    res: list[ModelRaw]
     for d in dts:
         if use_location is None:
             res = list(_run_query(d, db=list(locations(db)), around=around))

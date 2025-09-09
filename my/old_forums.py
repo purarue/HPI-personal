@@ -21,7 +21,7 @@ class config(user_config):
 
 import os
 from pathlib import Path
-from typing import Sequence, Iterator
+from collections.abc import Sequence, Iterator
 
 from autotui.shortcuts import load_from
 from old_forums.forum import Post  # model from lib

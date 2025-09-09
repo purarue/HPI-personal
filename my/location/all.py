@@ -2,7 +2,7 @@
 Merges location data from multiple sources -- this includes apple location data as well
 """
 
-from typing import Iterator
+from collections.abc import Iterator
 
 from my.core import Stats, make_logger
 
