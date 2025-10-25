@@ -8,7 +8,7 @@ ON_OS="${ON_OS:=$(on_machine)}"
 save_database() {
 	local BROWSER="${1:?Must provide browser to backup}"
 	browserexport save -b "${BROWSER}" --to "$(backup_to browsing)" || {
-		grep -q "$BROWSER" <<<'chrome' || {
+		[[ "$BROWSER" == 'chrome' ]] || {
 			send-error "browserexport: failed to backup ${BROWSER} database..."
 		}
 	}
