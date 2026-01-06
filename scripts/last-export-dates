@@ -135,7 +135,15 @@ EXPORTS: List[Export] = [
         over_days=10,
     ),
     Export("Discord Data Export", my.discord.data_export.messages, over_days=150),
-    Export("Google Takeout", my.google.takeout.parser.events, over_days=150),
+    Export(
+        "Google Takeout",
+        FileResult.from_paths(
+            get_files(
+                Path(os.environ["HPIDATA"]) / "google_takeout", guess_compression=False
+            )
+        ),
+        over_days=150,
+    ),
 ]
 
 
