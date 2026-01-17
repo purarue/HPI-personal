@@ -18,7 +18,7 @@ class config(user_config):
 
 
 from pathlib import Path
-from typing import Callable
+from collections.abc import Callable
 from collections.abc import Iterator
 
 from nextalbums.export import Album, read_dump

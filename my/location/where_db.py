@@ -18,7 +18,6 @@ import time
 from collections import defaultdict
 from pathlib import Path
 from typing import (
-    Optional,
     NamedTuple,
 )
 from collections.abc import Iterator, Mapping, Iterable, Sequence
@@ -41,29 +40,29 @@ class user_config(location.where_db):  # type: ignore
 
     # accuracy for locations to be able to use them
     # defaults to 300m
-    accuracy_filter: Optional[int] = None
+    accuracy_filter: int | None = None
 
     # how far we should be from the last point (metres) to create a new one
     # defaults to 100m
-    new_point_distance: Optional[int] = None
+    new_point_distance: int | None = None
 
     # how often we should send a new time, even if we haven't moved
     # defaults to 3h
-    new_point_duration: Optional[timedelta] = None
+    new_point_duration: timedelta | None = None
 
     # after this date, rely on locations more than fallbacks
     # i.e., some date you after which you have accurate locations (I use gpslogger for this)
     # if not provided, doesn't do heuristics
-    accurate_date_cutoff: Optional[date] = None
+    accurate_date_cutoff: date | None = None
 
     # if we're missing accurate data after the cutoff, use the previous location
     # till we have new data for this many days
     # if not provided, doesn't do heuristics
-    previous_accurate_for_days: Optional[int] = None
+    previous_accurate_for_days: int | None = None
 
     # location for the database
     # required to query to where you save the database
-    database_location: Optional[PathIsh] = None
+    database_location: PathIsh | None = None
 
 
 config = make_config(user_config)
@@ -178,7 +177,7 @@ def generate() -> Iterator[ModelDt]:
 
     # if we've had some accurate locations, use
     # those for a week instead of home
-    last_accurate: Optional[ModelDt] = None
+    last_accurate: ModelDt | None = None
 
     # go past one day, in case of timezone-issues
     tomorrow = datetime.now() + timedelta(days=1)
@@ -229,13 +228,13 @@ def gen() -> Iterator[ModelRaw]:
 Database = list[ModelRaw]
 
 
-def _db() -> Optional[Path]:
+def _db() -> Path | None:
     if config.database_location is None:
         return None
     return Path(config.database_location).expanduser().absolute()
 
 
-def locations(db_location: Optional[Path] = None) -> Iterator[ModelRaw]:
+def locations(db_location: Path | None = None) -> Iterator[ModelRaw]:
     if db_location is None:
         db_location = _db()
     if db_location is None:
@@ -270,8 +269,8 @@ def _parse_datetimes(
 
 
 def _parse_timedelta(
-    ctx: click.Context, param: click.Argument, value: Optional[str]
-) -> Optional[timedelta]:
+    ctx: click.Context, param: click.Argument, value: str | None
+) -> timedelta | None:
     if value is None:
         return None
 
@@ -284,8 +283,8 @@ def _parse_timedelta(
 
 
 def _parse_location(
-    ctx: click.Context, param: click.Argument, value: Optional[str]
-) -> Optional[tuple[float, float]]:
+    ctx: click.Context, param: click.Argument, value: str | None
+) -> tuple[float, float] | None:
     if value is None:
         return None
     match value.strip().split(","):
@@ -301,7 +300,7 @@ def _parse_location(
 def _run_query(
     epoch: int,
     db: Database,
-    around: Optional[timedelta] = None,
+    around: timedelta | None = None,
 ) -> Iterator[ModelRaw]:
     if epoch < db[0][2]:
         medium(
@@ -366,9 +365,9 @@ def main() -> None:
 )
 def query(
     db: Path,
-    use_location: Optional[tuple[float, float]],
+    use_location: tuple[float, float] | None,
     output: Sequence[str],
-    around: Optional[timedelta],
+    around: timedelta | None,
     date: Iterable[int],
 ) -> None:
     """
