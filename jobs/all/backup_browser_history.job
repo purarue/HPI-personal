@@ -19,4 +19,5 @@ evry 1 day -backup_browser_history && {
 	save_database firefox || return $?
 	save_database chrome || return $?
 	save_database floorp || return $?
+	save_database qutebrowser || return $?
 }
