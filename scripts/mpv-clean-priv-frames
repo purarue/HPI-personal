@@ -87,12 +87,13 @@ def clean_file(jf: Path) -> None:
     # then, if it was a gz file, use gzip -9 {file} to compress it
     # back to a .json.gz file
     if jf.suffix == ".gz":
-        without_gz = jf.with_suffix("")
+        without_gz = Path(jf.with_suffix(""))
         click.echo(f"Writing to {without_gz}", err=True)
         without_gz.write_text(json.dumps(data))
         click.echo(f"Compressing {without_gz}", err=True)
         subprocess.run(["gzip", "-f", "-9", str(without_gz)], check=True)
         assert jf.exists()
+        assert not without_gz.exists()
     else:
         jf.write_text(json.dumps(data))
 

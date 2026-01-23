@@ -1,4 +1,17 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.14"
+# dependencies = [
+#     "autotui>=0.4.8",
+#     "click>=8.3.1",
+#     "colorlog>=6.10.1",
+#     "hpi>=0.7.20250911",
+#     "hpi-purarue>=0.1.0",
+#     "malexport>=0.1.5",
+#     "pyfzf-iter>=0.0.1",
+# ]
+# ///
+
 
 from typing import Literal, Optional, Callable, Any, Dict, Iterator, get_args
 

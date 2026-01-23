@@ -30,7 +30,6 @@ from datetime import datetime, timedelta
 import click
 
 from my.config import mal  # type: ignore
-import my.google.takeout.parser
 import my.discord.data_export
 from my import smscalls
 from my.core import get_files
