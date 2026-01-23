@@ -4,7 +4,7 @@
 # dependencies = [
 #     "abook-parser>=0.1.0",
 #     "dateparser>=1.2.2",
-#     "hpi>=0.7.20250911",
+#     "hpi[optional]>=0.7.20250911",
 #     "hpi-purarue>=0.1.0",
 #     "lxml>=6.0.2",
 #     "mail-parser>=4.1.4",

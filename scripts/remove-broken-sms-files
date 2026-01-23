@@ -2,8 +2,7 @@
 # /// script
 # requires-python = ">=3.14"
 # dependencies = [
-#     "colorlog>=6.10.1",
-#     "hpi>=0.7.20250911",
+#     "hpi[optional]>=0.7.20250911",
 #     "logzero>=1.7.0",
 #     "lxml>=6.0.2",
 # ]

@@ -1,4 +1,16 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.14"
+# dependencies = [
+#     "hpi-feed>=0.1.1",
+#     "hpi-purarue",
+#     "hpi[optional]",
+#     "mpv-history-daemon",
+#     "offline-listens",
+#     "pura-utils",
+#     "listenbrainz_export",
+# ]
+# ///
 
 """
 Print merged listens with a local datetime, using https://github.com/purarue/my_feed

@@ -7,8 +7,6 @@
 #     "colorlog>=6.10.1",
 #     "hpi>=0.7.20250911",
 #     "hpi-purarue>=0.1.0",
-#     "more-itertools>=10.8.0",
-#     "orjson>=3.11.5",
 # ]
 # ///
 
