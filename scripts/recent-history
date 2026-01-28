@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.14"
+# dependencies = [
+#     "browserexport>=0.4.4",
+#     "more-itertools>=10.8.0",
+#     "pyfzf-iter>=0.0.1",
+#     "pyperclip>=1.11.0",
+#     "sqlite-backup>=0.1.8",
+# ]
+# ///
 
 
 import json

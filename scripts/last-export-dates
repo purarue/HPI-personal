@@ -133,7 +133,7 @@ EXPORTS: List[Export] = [
         ),
         over_days=10,
     ),
-    Export("Discord Data Export", my.discord.data_export.messages, over_days=150),
+    Export("Discord Data Export", my.discord.data_export.messages, over_days=182),
     Export(
         "Google Takeout",
         FileResult.from_paths(
