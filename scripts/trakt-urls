@@ -6,6 +6,7 @@
 #     "colorlog>=6.10.1",
 #     "hpi>=0.7.20250911",
 #     "hpi-purarue>=0.1.0",
+#     "click",
 #     "traktexport>=0.1.10",
 # ]
 # ///
