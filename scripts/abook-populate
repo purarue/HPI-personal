@@ -21,13 +21,13 @@ from __future__ import annotations
 import os
 import json
 from pathlib import Path
-from typing import Counter, Literal, NamedTuple, get_args
+from typing import Literal, NamedTuple, get_args
+from collections import Counter
 
 import click
 import phonenumbers
 
 from abook_parser.parser import AbookFile
-
 
 pth = os.environ["ABOOK_FILE"]
 already_prompted_file = Path(os.environ["XDG_DOCUMENTS_DIR"]) / ".abook_prompted.json"
