@@ -4,7 +4,7 @@
 wait-for-internet -q --timeout "${WFI_TIMEOUT:-10}" || exit 0
 
 # shellcheck disable=SC1091
-source "$HPIDATA/tokens" # source my lichess token
+source "$SHARED_DIR/creds/tokens" # source my lichess token
 [[ -n "$LICHESS_TOKEN" ]] || send-error "Could not grab LICHESS_TOKEN from tokens file"
 
 chess_backup() {
