@@ -25,7 +25,7 @@ from functools import cache
 from datetime import datetime, date, timedelta
 from dataclasses import dataclass
 
-from my.core import make_config, PathIsh
+from my.core import make_config
 from my.core.warnings import medium
 from my.location.common import Location, LatLon
 
@@ -62,7 +62,7 @@ class user_config(location.where_db):  # type: ignore
 
     # location for the database
     # required to query to where you save the database
-    database_location: PathIsh | None = None
+    database_location: Path | str | None = None
 
 
 config = make_config(user_config)
